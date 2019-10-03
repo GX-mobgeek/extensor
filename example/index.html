@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+    <meta charset="utf-8" />
+    <head>
+        <title>Chat - ioEx:Ex</title>
+        <link rel="stylesheet" href="/style.css">
+    </head>
+    <body>
+        <div class="wrapper" id="chat-extended">
+            <h2 class="box-title">
+                Extended <span style="font-size:.9rem;">with serialization</span><br />
+                <span id="bytelength-extended"></span>
+            </h2>
+            <ul class="msgs-box" id="msgs-box-extended">
+            </ul>
+        </div>
+        <div class="wrapper" style="background-color:#111;" id="chat-default">
+            <h2 class="box-title">
+                Default<br />
+                <span id="bytelength-default"></span>
+            </h2>
+            <ul class="msgs-box" id="msgs-box-default">
+            </ul>
+        </div>
+        <div id="text-box-container">
+            <textarea id="text-box"></textarea>
+            <button class="button" id="misc-send-button">misc struct</button>
+            <button class="button" id="msg-send-button"><span class="btn-icon">&#10148;</span></button>
+        </div>
+
+        <script src="/dist/client.js"></script>
+    </body>
+</html>

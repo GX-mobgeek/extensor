@@ -1,0 +1,51 @@
+{
+  "name": "extensor",
+  "version": "0.1.0",
+  "description": "Extra funcionalities to socket.io",
+  "main": "index",
+  "type": "module",
+  "scripts": {
+    "example": "npm run build && npx webpack --config ./example/webpack.config.js && npx nodemon ./example/server.js",
+    "build": "babel ./src --out-dir ./lib",
+    "test": "npm run build && nyc mocha --reporter spec --slow 200 --bail --exit --timeout 10000 test/index.js",
+    "release": "standard-version"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GX-mobgeek/extensor.git"
+  },
+  "keywords": [
+    "socket.io",
+    "extensor",
+    "authorization",
+    "block",
+    "multiple",
+    "connections",
+    "packet",
+    "size",
+    "minifier",
+    "schemapack"
+  ],
+  "author": "Fernando Costa",
+  "license": "MIT",
+  "dependencies": {
+    "schemapack": "^1.4.2",
+    "slugify": "^1.3.5"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.6.2",
+    "@babel/core": "^7.6.2",
+    "@babel/preset-env": "^7.6.2",
+    "babel-loader": "^8.0.6",
+    "bytes": "^3.1.0",
+    "expect.js": "^0.3.1",
+    "mocha": "^6.2.0",
+    "nyc": "^14.1.1",
+    "socket.io": "^2.3.0",
+    "socket.io-client": "^2.3.0",
+    "standard-version": "^7.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
