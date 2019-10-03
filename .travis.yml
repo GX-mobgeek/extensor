@@ -7,6 +7,7 @@ cache:
 before_script:
   - npm install
 script:
+  - travis_retry npm run lint
   - travis_retry npm test
 deploy:
   provider: npm
