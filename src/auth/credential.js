@@ -1,60 +1,51 @@
-import watchPackets from '../watch-packets'
-import { socketHandler } from '../force-one/server'
-import atach from './atachs'
+import watchPackets from "../watch-packets";
+import { socketHandler } from "../force-one/server";
+import atach from "./atachs";
+import { EVENTS } from "../constants";
 
-export const server = (
-    io,
-    socket,
-    next,
-    { timeout = false },
-    handler) => {
+export const server = (io, socket, next, { timeout = false }, handler) => {
+  next();
 
-    next();
+  watchPackets(socket);
 
-    watchPackets(socket);
+  let timer;
+  if (timeout !== false) {
+    timer = setTimeout(() => {
+      socket.disconnect();
+    }, timeout);
+  }
 
-    let _timeout;
-    if (timeout !== false) {
-        _timeout = setTimeout(() => {
+  socket.on(EVENTS.AUTHORIZE, (data, ack) => {
+    handler(
+      data,
+      (result, atachs) => {
+        if (result) {
+          socket.extensorAuthorized = true;
 
-            socket.disconnect();
+          if (timeout !== false) {
+            clearTimeout(timer);
+          }
 
-        }, timeout);
-    }
+          if (atachs) {
+            atach(socket, atachs);
+          }
 
-    socket.on('__authorize', (data, ack) => {
+          if (io.extensorNoMutiplicity) {
+            socketHandler(socket, io.extensorNoMutiplicity);
+          }
+        }
 
-        handler(data, (result, atachs) => {
-
-            if (result) {
-                socket.___authorized = true;
-
-                if (timeout !== false)
-                    clearTimeout(_timeout);
-
-                if (atachs)
-                    atach(socket, atachs);
-
-                if (io.___exNoMutiplicity)
-                    socketHandler(socket, io.___exNoMutiplicity);
-
-            }
-
-            ack(result);
-
-        }, socket)
-
-    });
-
-}
+        ack(result);
+      },
+      socket
+    );
+  });
+};
 
 export const client = (socket, handler) => {
-
-    handler((data, result) => {
-        socket.emit('__authorize', data, response => {
-            result(response);
-        });
-
+  handler((data, result) => {
+    socket.emit(EVENTS.AUTHORIZE, data, response => {
+      result(response);
     });
-
-}
+  });
+};

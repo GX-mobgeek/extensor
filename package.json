@@ -8,6 +8,7 @@
     "example": "npm run build && webpack --config ./example/webpack.config.js & npx nodemon ./example/server.js",
     "build": "babel ./src --out-dir ./lib",
     "test": "npm run build && nyc mocha --reporter spec --slow 200 --bail --exit --timeout 10000 test/index.js",
+    "lint": "./node_modules/.bin/eslint ./src/**",
     "release": "standard-version"
   },
   "repository": {
@@ -38,6 +39,14 @@
     "@babel/preset-env": "^7.6.2",
     "babel-loader": "^8.0.6",
     "bytes": "^3.1.0",
+    "eslint": "^6.5.1",
+    "eslint-config-prettier": "^6.3.0",
+    "eslint-config-standard": "^14.1.0",
+    "eslint-plugin-import": "^2.18.2",
+    "eslint-plugin-node": "^10.0.0",
+    "eslint-plugin-prettier": "^3.1.1",
+    "eslint-plugin-promise": "^4.2.1",
+    "eslint-plugin-standard": "^4.0.1",
     "expect.js": "^0.3.1",
     "mocha": "^6.2.0",
     "nyc": "^14.1.1",

@@ -1,31 +1,29 @@
-import { socketHandler } from '../force-one/server'
-import atach from './atachs'
+import { socketHandler } from "../force-one/server";
+import atach from "./atachs";
+import { EVENTS } from "../constants";
 
 export const server = (io, socket, next, handler) => {
+  handler((result, atachs) => {
+    next();
 
-    handler((result, atachs) => {
+    socket.emit(EVENTS.AUTH_RESULT, result);
 
-        next();
+    socket.extensorAuthorized = result;
 
-        socket.emit('__authResult', result);
+    if (!result) {
+      return setTimeout(() => socket.disconnect(), 10);
+    }
 
-        socket.___authorized = result;
+    if (atachs) {
+      atach(socket, atachs);
+    }
 
-        if (!result)
-            return setTimeout(() => socket.disconnect(), 10);
-
-        if (atachs)
-            atach(socket, atachs);
-
-        if (io.___exNoMutiplicity)
-            socketHandler(socket, io.___exNoMutiplicity);
-
-    }, socket);
-
-}
+    if (io.extensorNoMutiplicity) {
+      socketHandler(socket, io.extensorNoMutiplicity);
+    }
+  }, socket);
+};
 
 export const client = (socket, handler) => {
-
-    socket.on('__authResult', result => handler(result));
-
-}
+  socket.on(EVENTS.AUTH_RESULT, result => handler(result));
+};

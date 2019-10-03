@@ -1,125 +1,109 @@
-import slugify from 'slugify'
-import watchPackets from '../watch-packets'
-import { IP, IP_UA } from './constants'
+import slugify from "slugify";
+import watchPackets from "../watch-packets";
+import { EVENTS, MULTIPLE_IDENTIFY_METHODS } from "../constants";
 
-const refs = [IP, IP_UA];
+const refs = [MULTIPLE_IDENTIFY_METHODS.IP, MULTIPLE_IDENTIFY_METHODS.IP_UA];
 
 function getId(socket, ref) {
+  if (typeof ref === "number") {
+    if (refs.indexOf(ref) === -1)
+      throw new Error("Invalid method of multiple connections identify");
 
-    if (typeof ref === 'number') {
+    const { headers } = socket.handshake;
 
-        if (refs.indexOf(ref) === -1)
-            throw new Error('Invalid method of multiple connections identify');
+    const ip =
+      headers["x-real-ip"] ||
+      headers["x-forwarded-for"] ||
+      socket.handshake.address;
 
-        let { headers } = socket.handshake;
-
-        let ip = (
-            headers['x-real-ip'] ||
-            headers['x-forwarded-for'] ||
-            socket.handshake.address
-        );
-
-        switch (ref) {
-            case IP:
-                return ip;
-            case IP_UA:
-                let userAgent = slugify(headers['user-agent']);
-                return `${ip}${userAgent}`;
-
-        }
-
+    switch (ref) {
+      case MULTIPLE_IDENTIFY_METHODS.IP:
+        return ip;
+      case MULTIPLE_IDENTIFY_METHODS.IP_UA:
+        return `${ip}${slugify(headers["user-agent"])}`;
     }
+  }
 
-    if (!(ref in socket))
-        throw new Error(`Identify "${ref}" not found in socket: ${socket.id}`);
+  if (!(ref in socket)) {
+    throw new Error(`Identify "${ref}" not found in socket: ${socket.id}`);
+  }
 
-    return socket[ref];
-
+  return socket[ref];
 }
 
-export const socketHandler = (socket, {
+function onReject(socket, e) {
+  socket.disconnect();
+  throw new Error(e);
+}
+
+export const socketHandler = (
+  socket,
+  {
     adapter,
-    id = IP,
+    id = MULTIPLE_IDENTIFY_METHODS.IP,
     onTry,
-    storagePrefix = '___exIoNMNS',
+    storagePrefix = "extensor_CAS",
     connectionTimeout = 2
-}) => {
+  }
+) => {
+  if (connectionTimeout < 2)
+    throw new Error("Minimum connection alive state timeout is 2 minutes");
 
-    if (connectionTimeout < 2)
-        throw new Error("Minimum connection alive state timeout is 2 minutes");
+  return new Promise((resolve, reject) => {
+    const refId = getId(socket, id);
 
-    return new Promise(async (resolve, reject) => {
+    adapter
+      .get(`${storagePrefix}${refId}`)
+      .then(conn => {
+        if (conn === 1) {
+          socket.emit(EVENTS.MULTIPLE_TRY, 1);
+          socket.disconnect();
 
-        try {
-            let refId = getId(socket, id);
+          resolve();
 
-            let conn = await adapter.get(`${storagePrefix}${refId}`);
-
-            if (conn === 1) {
-
-                socket.emit('__multipleNotAlloweed', 1);
-                socket.disconnect();
-
-                resolve(false);
-
-                return onTry && onTry();
-            }
-
-            let interval;
-
-            await adapter.set(`${storagePrefix}${refId}`, 1, connectionTimeout);
-
-            interval = setInterval((prefix, refId) => {
-
-                adapter.set(`${prefix}${refId}`, 1, connectionTimeout);
-
-            }, (connectionTimeout - 1) * 60 * 1000, storagePrefix, refId);
-
-            socket.on('disconnect', () => {
-
-                clearInterval(interval);
-                adapter.del(`${storagePrefix}${refId}`);
-
-            });
-
-            resolve(true);
-
-
-        } catch (e) {
-            reject(e);
+          return onTry && onTry();
         }
 
-    })
+        adapter
+          .set(`${storagePrefix}${refId}`, 1, connectionTimeout)
+          .then(() => {
+            const interval = setInterval(
+              (prefix, refId) => {
+                adapter.set(`${prefix}${refId}`, 1, connectionTimeout);
+              },
+              (connectionTimeout - 1) * 60 * 1000,
+              storagePrefix,
+              refId
+            );
+
+            socket.on("disconnect", () => {
+              clearInterval(interval);
+              adapter.del(`${storagePrefix}${refId}`);
+            });
+
+            resolve();
+          })
+          .catch(e => onReject(socket, e));
+      })
+      .catch(e => onReject(socket, e));
+  });
 };
 
 export const ioHandler = (io, rules) => {
+  rules.connectionTimeout |= 2;
 
-    rules.connectionTimeout |= 2;
+  if (rules.connectionTimeout < 2) {
+    throw new Error("Minimum connection alive state timeout is 2 minutes");
+  }
 
-    if (rules.connectionTimeout < 2)
-        throw new Error("Minimum connection alive state timeout is 2 minutes");
+  io.use((socket, next) => {
+    next();
 
+    if (!io.extensorAuthHandling) {
+      watchPackets(socket);
+      socket.extensorAuthorized = true;
+    }
 
-    io.use(async (socket, next) => {
-
-        next();
-
-        try {
-
-            if (!io.___exAuthHandling) {
-                watchPackets(socket);
-                socket.___authorized = true;
-            }
-
-            await socketHandler(socket, rules);
-
-        } catch (e) {
-
-            socket.disconnect();
-            throw new Error(e);
-
-        }
-
-    });
-
-}
+    socketHandler(socket, rules);
+  });
+};

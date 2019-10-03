@@ -1,22 +1,20 @@
-import { IP, IP_UA } from './constants'
-import client from './client'
-import * as server from './server'
-import * as adapters from './adapters'
+import client from "./client";
+import * as server from "./server";
+import * as adapters from "./adapters";
+import { MULTIPLE_IDENTIFY_METHODS } from "../constants";
 
 export const forceOne = (io, rule) => {
+  if ("io" in io) {
+    return client(io, rule);
+  }
 
-    if (!('io' in io)) {
+  if (!io.extensorAuthHandling) {
+    return server.ioHandler(io, rule);
+  }
 
-        if (!io.___exAuthHandling)
-            return server.ioHandler(io, rule);
-
-        return io.___exNoMutiplicity = rule;
-
-    } else
-        return client(io, rule);
-
+  io.extensorNoMutiplicity = rule;
 };
 
 forceOne.adapters = adapters;
-forceOne.IP = IP;
-forceOne.IP_UA = IP_UA;
+forceOne.IP = MULTIPLE_IDENTIFY_METHODS.IP;
+forceOne.IP_UA = MULTIPLE_IDENTIFY_METHODS.UA;
