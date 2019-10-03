@@ -1,5 +1,5 @@
 # Extensor
-[![Build Status](https://travis-ci.org/GX-mobgeek/extensor.svg?branch=master)](https://travis-ci.org/GX-mobgeek/extensor)
+[![Build Status](https://travis-ci.org/GX-mobgeek/extensor.svg?branch=master)](https://travis-ci.org/GX-mobgeek/extensor) [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
 ### A javascript library that extend functions to the socket.io, work on server and browser.
 
 **Currently implemented:**
