@@ -1,6 +1,7 @@
 # Extensor
 
 [![Build Status](https://travis-ci.org/GX-mobgeek/extensor.svg?branch=master)](https://travis-ci.org/GX-mobgeek/extensor) [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FGX-mobgeek%2Fextensor.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2FGX-mobgeek%2Fextensor?ref=badge_shield)
 
 ### A javascript library that extend functions to the socket.io, work on server and browser.
 
@@ -338,3 +339,6 @@ Create a step to block multiple connections
 ## License
 
 MIT
+
+
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FGX-mobgeek%2Fextensor.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2FGX-mobgeek%2Fextensor?ref=badge_large)
