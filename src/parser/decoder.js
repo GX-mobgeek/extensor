@@ -1,23 +1,7 @@
 import Emitter from "component-emitter";
 import schemapack from "schemapack";
-import ParserError from './error'
-
-const schema = schemapack.build({
-  _id: "varuint",
-  data: "buffer",
-  id: "varint",
-  nsp: "string"
-});
-
-const TYPES = {
-  CONNECT: 0,
-  DISCONNECT: 1,
-  EVENT: 2,
-  ACK: 3,
-  ERROR: 4,
-  BINARY_EVENT: 5,
-  BINARY_ACK: 6
-};
+import ParserError from './error';
+import { schema, TYPES } from "./utils";
 
 const errorPacket = {
   type: TYPES.ERROR,
@@ -65,7 +49,7 @@ const createDecoder = (map, idmap, schemas) =>
       }
     }
 
-    destroy() {}
+    destroy() { }
   };
 
 export default createDecoder;

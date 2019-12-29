@@ -1,8 +1,11 @@
 # Extensor
 
-[![Build Status](https://travis-ci.org/GX-mob/extensor.svg?branch=master)](https://travis-ci.org/GX-mob/extensor) [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com) [![DependenciesSstatus](https://david-dm.org/gx-mob/extensor/status.svg)](https://david-dm.org/gx-mob/extensor)
+[![Build Status](https://travis-ci.org/GX-mob/extensor.svg?branch=master)](https://travis-ci.org/GX-mob/extensor)
+[![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
+[![DependenciesSstatus](https://david-dm.org/gx-mob/extensor/status.svg)](https://david-dm.org/gx-mob/extensor)
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FGX-mobgeek%2Fextensor.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2FGX-mobgeek%2Fextensor?ref=badge_shield)
-[![Known Vulnerabilities](https://snyk.io//test/github/GX-mobgeek/extensor/badge.svg?targetFile=package.json)](https://snyk.io//test/github/GX-mobgeek/extensor?targetFile=package.json)
+[![Known Vulnerabilities](https://snyk.io//test/github/GX-mobgeek/extensor/badge.svg?targetFile=packhttps://codecov.io/gh/GX-mob/extensor/branch/master/graph/badge.svgage.json)](https://snyk.io//test/github/GX-mobgeek/extensor?targetFile=package.json)
+[![Code Coverage](https://codecov.io/gh/GX-mob/extensor/branch/master/graph/badge.svg)](https://codecov.io/gh/GX-mob/extensor/branch/master)
 
 ### A javascript library that extend functions to the socket.io, work on server and browser.
 

@@ -7,13 +7,17 @@
   "scripts": {
     "example": "npm run build && webpack --config ./example/webpack.config.js & npx nodemon ./example/server.js",
     "build": "babel ./src --out-dir ./lib",
-    "test": "npm run build && nyc mocha --reporter spec --slow 200 --bail --exit --timeout 10000 test/index.js",
+    "test": "nyc mocha --require esm --reporter spec --slow 200 --bail --exit --timeout 10000 test/index.js",
+    "report-coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov",
     "lint": "./node_modules/.bin/eslint ./src/**",
-    "release": "standard-version"
+    "release": "npm run build && standard-version"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/GX-mobgeek/extensor.git"
+  },
+  "esm": {
+    "cjs": true
   },
   "keywords": [
     "socket.io",
@@ -47,6 +51,7 @@
     "eslint-plugin-prettier": "^3.1.1",
     "eslint-plugin-promise": "^4.2.1",
     "eslint-plugin-standard": "^4.0.1",
+    "esm": "^3.2.25",
     "expect.js": "^0.3.1",
     "mocha": "^6.2.0",
     "nyc": "^14.1.1",

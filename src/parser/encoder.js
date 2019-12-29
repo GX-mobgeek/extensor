@@ -1,23 +1,7 @@
 /* eslint-disable standard/no-callback-literal */
 import schemapack from "schemapack";
 import ParserError from "./error";
-
-const schema = schemapack.build({
-  _id: "varuint",
-  data: "buffer",
-  id: "varint",
-  nsp: "string"
-});
-
-const TYPES = {
-  CONNECT: 0,
-  DISCONNECT: 1,
-  EVENT: 2,
-  ACK: 3,
-  ERROR: 4,
-  BINARY_EVENT: 5,
-  BINARY_ACK: 6
-};
+import { schema, TYPES } from "./utils";
 
 const createEncoder = (map, idmap, schemas) => {
   return class Encoder {
