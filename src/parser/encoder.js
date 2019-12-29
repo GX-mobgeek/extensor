@@ -1,5 +1,4 @@
 /* eslint-disable standard/no-callback-literal */
-import schemapack from "schemapack";
 import ParserError from "./error";
 import { schema, TYPES } from "./utils";
 

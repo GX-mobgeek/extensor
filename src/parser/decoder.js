@@ -1,5 +1,4 @@
 import Emitter from "component-emitter";
-import schemapack from "schemapack";
 import ParserError from './error';
 import { schema, TYPES } from "./utils";
 
