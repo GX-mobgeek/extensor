@@ -1,3 +1,4 @@
+import { kAuthorized } from "./symbols";
 import { EVENTS } from "./constants";
 
 const defaultAuthorized = [
@@ -7,10 +8,10 @@ const defaultAuthorized = [
 ];
 
 export default (socket, authorize = defaultAuthorized) => {
-  socket.extensorAuthorized = false;
+  socket[kAuthorized] = false;
 
   socket.use((packet, next) => {
-    if (!!~authorize.indexOf(packet[0]) || socket.extensorAuthorized)
+    if (authorize.indexOf(packet[0]) !== -1 || socket[kAuthorized])
       return next();
   });
 };

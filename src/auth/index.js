@@ -2,26 +2,29 @@ import * as auto from "./auto";
 import * as credential from "./credential";
 import * as mixed from "./mixed";
 
+import { kAuthHandling } from "../symbols";
+
 const CREDENTIAL = 1;
 const AUTO = 2;
 const MIXED = 3;
 
 const methods = [CREDENTIAL, AUTO, MIXED];
 
-const opts = {
-  method: AUTO,
-  timeout: 60000
-};
-
-export const withAuth = (io, options = {}, step1, step2) => {
-  options = { ...opts, ...options };
-
+export const withAuth = (
+  io,
+  options = {
+    method: AUTO,
+    timeout: 60000
+  },
+  step1,
+  step2
+) => {
   if (!~methods.indexOf(options.method)) {
     throw new Error(`Invalid authentication method "${options.method}"`);
   }
 
   if (!("io" in io)) {
-    io.extensorAuthHandling = true;
+    io[kAuthHandling] = true;
 
     return io.use((socket, next) => {
       switch (options.method) {

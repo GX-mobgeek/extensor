@@ -1,6 +1,7 @@
 import { socketHandler } from "../force-one/server";
 import atach from "./atachs";
 import { EVENTS } from "../constants";
+import { kAuthorized, kNoMutiplicity } from "../symbols";
 
 export const server = (io, socket, next, handler) => {
   handler((result, atachs) => {
@@ -8,7 +9,7 @@ export const server = (io, socket, next, handler) => {
 
     socket.emit(EVENTS.AUTH_RESULT, result);
 
-    socket.extensorAuthorized = result;
+    socket[kAuthorized] = result;
 
     if (!result) {
       return setTimeout(() => socket.disconnect(), 10);
@@ -18,8 +19,8 @@ export const server = (io, socket, next, handler) => {
       atach(socket, atachs);
     }
 
-    if (io.extensorNoMutiplicity) {
-      socketHandler(socket, io.extensorNoMutiplicity);
+    if (io[kNoMutiplicity]) {
+      socketHandler(socket, io[kNoMutiplicity]);
     }
   }, socket);
 };

@@ -1,6 +1,7 @@
 import slugify from "slugify";
 import watchPackets from "../watch-packets";
 import { EVENTS, MULTIPLE_IDENTIFY_METHODS } from "../constants";
+import { kAuthHandling, kAuthorized } from "../symbols";
 
 const refs = [MULTIPLE_IDENTIFY_METHODS.IP, MULTIPLE_IDENTIFY_METHODS.IP_UA];
 
@@ -90,7 +91,7 @@ export const socketHandler = (
 };
 
 export const ioHandler = (io, rules) => {
-  rules.connectionTimeout |= 2;
+  rules.connectionTimeout = rules.connectionTimeout || 2;
 
   if (rules.connectionTimeout < 2) {
     throw new Error("Minimum connection alive state timeout is 2 minutes");
@@ -99,9 +100,9 @@ export const ioHandler = (io, rules) => {
   io.use((socket, next) => {
     next();
 
-    if (!io.extensorAuthHandling) {
+    if (!io[kAuthHandling]) {
       watchPackets(socket);
-      socket.extensorAuthorized = true;
+      socket[kAuthorized] = true;
     }
 
     socketHandler(socket, rules);

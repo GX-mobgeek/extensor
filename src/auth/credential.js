@@ -1,6 +1,7 @@
 import watchPackets from "../watch-packets";
 import { socketHandler } from "../force-one/server";
 import atach from "./atachs";
+import { kAuthorized, kNoMutiplicity } from "../symbols";
 import { EVENTS } from "../constants";
 
 export const server = (io, socket, next, { timeout = false }, handler) => {
@@ -20,7 +21,7 @@ export const server = (io, socket, next, { timeout = false }, handler) => {
       data,
       (result, atachs) => {
         if (result) {
-          socket.extensorAuthorized = true;
+          socket[kAuthorized] = true;
 
           if (timeout !== false) {
             clearTimeout(timer);
@@ -30,8 +31,8 @@ export const server = (io, socket, next, { timeout = false }, handler) => {
             atach(socket, atachs);
           }
 
-          if (io.extensorNoMutiplicity) {
-            socketHandler(socket, io.extensorNoMutiplicity);
+          if (io[kNoMutiplicity]) {
+            socketHandler(socket, io[kNoMutiplicity]);
           }
         }
 
