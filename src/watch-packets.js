@@ -4,7 +4,7 @@ import { EVENTS } from "./constants";
 const defaultAuthorized = [
   EVENTS.AUTHORIZE,
   EVENTS.AUTH_RESULT,
-  EVENTS.EVT_MULTIPLE_TRY
+  EVENTS.MULTIPLE_ATTEMP
 ];
 
 export default (socket, authorize = defaultAuthorized) => {

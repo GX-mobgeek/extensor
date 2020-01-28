@@ -13,6 +13,7 @@ script:
   - travis_retry npm test
   - travis_retry npm run report-coverage
 deploy:
+  edge: true
   provider: npm
   email: ferco0@live.com
   api_key: $NPM_TOKEN

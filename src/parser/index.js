@@ -1,5 +1,5 @@
 import schemaBuilder from "./schema-builder";
-import encoder from "./encoder.js";
+import encoder from "./encoder";
 import decoder from "./decoder";
 
 const exIoEvents = {
@@ -13,7 +13,7 @@ const exIoEvents = {
   }
 };
 
-export function buildParser(dataStruct) {
+export default function buildParser(dataStruct) {
   const { idmap, schemas } = schemaBuilder({ ...dataStruct, ...exIoEvents });
 
   return {

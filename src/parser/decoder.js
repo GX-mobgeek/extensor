@@ -1,15 +1,14 @@
+import { debug as Debug } from "../utils";
 import Emitter from "component-emitter";
-import ParserError from './error';
 import { schema, TYPES } from "./utils";
 
-const errorPacket = {
-  type: TYPES.ERROR,
-  data: "parser error"
-};
+const debug = Debug.extend("parser").extend("decoder");
 
 const createDecoder = (map, idmap, schemas) =>
   class Decoder extends Emitter {
     add(obj) {
+      debug("packet %j", obj);
+
       if (typeof obj === "string") {
         this.parseJSON(obj);
       } else {
@@ -17,12 +16,17 @@ const createDecoder = (map, idmap, schemas) =>
       }
     }
 
-    parseJSON(obj) {
+    parseJSON(string) {
       try {
-        const decoded = JSON.parse(obj);
+        const decoded = JSON.parse(string);
+        debug("json packet %j", decoded);
         this.emit("decoded", decoded);
       } catch (e) {
-        this.emit("decoded", errorPacket);
+        debug("json error, packet: %j, error: %s", string, e.message);
+        this.emit("decoded", {
+          type: TYPES.ERROR,
+          data: `parser error: ${e.message}`
+        });
       }
     }
 
@@ -41,14 +45,20 @@ const createDecoder = (map, idmap, schemas) =>
 
         if (id !== -1) packet.id = id;
 
+        debug("decoded binary: %j", packet);
+
         this.emit("decoded", packet);
       } catch (e) {
-        // this.emit('decoded', errorPacket);
-        throw new ParserError("Decode", obj, map, true, e);
+        debug("decode binary error: %s", e.message);
+
+        this.emit("decoded", {
+          type: TYPES.ERROR,
+          data: `parser error: ${e.message}`
+        });
       }
     }
 
-    destroy() { }
+    destroy() {}
   };
 
 export default createDecoder;

@@ -1,10 +1,72 @@
-"use strict";
-import { Server } from "http";
-import io from "socket.io";
-import ioClient from "socket.io-client";
-import expect from "expect.js";
-import map from "./map";
+import { expect } from "chai";
+import extensor, { withAuth, forceOne, buildParser } from "../src";
+import { addFunction } from "../src/attach";
+import { makeClient, makeServers } from "./utils";
 
+describe("full usage", () => {
+  it("both auth methods", done => {
+    const { ioServer, httpServer } = makeServers();
+    extensor(ioServer);
+
+    ioServer.auth({
+      async server() {
+        return true;
+      },
+      async credential({ data: { token } }) {
+        if (token === 1) return { user: 123 };
+
+        return false;
+      }
+    });
+
+    const client = makeClient(httpServer);
+
+    extensor(client);
+
+    client.auth(async result => {
+      if (await client.auth({ token: 1 })) {
+        done();
+      }
+    });
+  });
+});
+
+describe("breaking-changes warnings", () => {
+  it("warn withAuth", () =>
+    expect(withAuth).to.throw(
+      "The things has changed, breaking changes, read the docs again."
+    ));
+
+  it("warn forceOne", () =>
+    expect(forceOne).to.throw(
+      "The things has changed, breaking changes, read the docs again."
+    ));
+
+  it("warn buildParser", () =>
+    expect(buildParser).to.throw(
+      "The things has changed, breaking changes, this method has not get changed but is from an old version of this module, read the docs again."
+    ));
+});
+describe("attacher", () => {
+  it("throw if invalid key", done => {
+    const { ioServer, httpServer } = makeServers();
+    const client = makeClient(httpServer, { autoConnect: false });
+
+    ioServer.on("connection", socket => {
+      addFunction(socket);
+      // test: prevent link function redefinition
+      addFunction(socket);
+
+      expect(() => {
+        socket.attach({ id: 123 });
+      }).to.throw("Invalid attach key: id");
+      done();
+    });
+
+    client.open();
+  });
+});
+/*
 import { buildParser, withAuth, forceOne } from "../src";
 
 // Creates a socket.io client for the given server
@@ -119,9 +181,46 @@ describe("parser", function() {
   });
 });
 
+// import extend from "extensor";
+// import extendAuthServer from "extensor/auth/server";
+// import extendAuthClient from "extensor/auth/client";
+
 describe("authorization", function() {
   it("throw if attempt to attach reserved socket property", function(done) {
     const { srv, httpSrv } = ioServer();
+
+    extend(srv, { timeout: 5000, multiplicity: { adapter: customAdapter }});
+
+    // auto
+    srv.auth({
+      server({ socket, done }) {
+
+        socket.attach("connectTime", Date.now())
+        done(true);
+      }
+    });
+
+    // credential
+    srv.auth({
+      async credendital(ctx) {
+        const { data, socket } = ctx;
+        if (data.user = "123") {
+          return true;
+        }
+
+        return false;
+      }
+    })
+    srv.auth(true, async ({ socket, data }) => {
+        
+    });
+
+    // mixed
+    srv.auth(async ({ socket }) => {
+      return true;
+    }, ({ socket, data, done }) => {
+        
+    });
 
     withAuth(
       srv,
@@ -138,6 +237,10 @@ describe("authorization", function() {
     );
 
     const clientSocket = client(httpSrv);
+    extendAuthClient(clientSocket);
+
+    const auth = await client.authorize();
+    const auth = await client.authorize({ user: 123 });
 
     withAuth(clientSocket, { method: withAuth.AUTO }, result => {});
   });
@@ -486,3 +589,4 @@ describe("force one connection", function() {
     }
   });
 });
+*/

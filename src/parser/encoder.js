@@ -1,10 +1,13 @@
 /* eslint-disable standard/no-callback-literal */
-import ParserError from "./error";
+import { debug as Debug } from "../utils";
 import { schema, TYPES } from "./utils";
+
+const debug = Debug.extend("parser").extend("encoder");
 
 const createEncoder = (map, idmap, schemas) => {
   return class Encoder {
     encode(packet, callback) {
+      debug("packet %j", packet);
       switch (packet.type) {
         case TYPES.EVENT:
         case TYPES.BINARY_EVENT:
@@ -20,16 +23,19 @@ const createEncoder = (map, idmap, schemas) => {
 
     json(packet) {
       try {
+        debug("json packet %j", packet);
         return JSON.stringify(packet);
       } catch (e) {
-        throw new Error(e);
+        debug("json error, packet: %j, error: %s", packet, e.message);
+        return `{"type": ${TYPES.ERROR}, "data": "parser error"}`;
       }
     }
 
     pack(packet) {
       try {
-        if (packet.type === TYPES.BINARY_EVENT && !(packet.data[0] in map))
-          throw new Error("Binary event must be specified on schemas");
+        if (packet.type === TYPES.BINARY_EVENT && !(packet.data[0] in map)) {
+          return this.json(packet);
+        }
 
         const eventName = packet.data[0];
         const eventSchema = schemas[eventName];
@@ -43,8 +49,8 @@ const createEncoder = (map, idmap, schemas) => {
 
         return schema.encode(flatPacket);
       } catch (e) {
-        throw new ParserError("Encode", packet, map, true, e);
-        //  return this.json(errorPacket);
+        debug("encode binary error: %s", e.message);
+        return `{"type": ${TYPES.ERROR}, "data": "parser error"}`;
       }
     }
   };
