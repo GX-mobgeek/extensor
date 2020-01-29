@@ -1,8 +1,10 @@
+import attach from "../../attach";
 import { kAuthorized } from "../../symbols";
 import { EVENTS } from "../../constants";
 
 export default function ServerAuth(io, socket, handler) {
   let resolved = false;
+  socket[kAuthorized] = false;
   return new Promise((resolve, reject) => {
     handler({
       socket,
@@ -22,8 +24,14 @@ export default function ServerAuth(io, socket, handler) {
 }
 
 function resolver(socket, result, fn) {
-  socket.emit(EVENTS.AUTH_RESULT, result);
-  if (result) socket[kAuthorized] = true;
+  if (result) {
+    socket[kAuthorized] = true;
+
+    if (result instanceof Object) {
+      attach(socket, result);
+    }
+  }
+  socket.emit(EVENTS.AUTH_RESULT, !!result);
   fn();
   return true;
 }

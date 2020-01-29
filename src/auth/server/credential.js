@@ -1,9 +1,5 @@
-import atach from "../../attach";
-import {
-  kAuthorized,
-  // kNoMutiplicity,
-  kSocketTimeout
-} from "../../symbols";
+import attach from "../../attach";
+import { kAuthorized, kSocketTimeout } from "../../symbols";
 import { EVENTS } from "../../constants";
 
 export default function CredentialAuth(
@@ -61,7 +57,7 @@ function resolver({ socket, result, ack, time }) {
     }
 
     if (result instanceof Object) {
-      atach(socket, result);
+      attach(socket, result);
     }
   }
 

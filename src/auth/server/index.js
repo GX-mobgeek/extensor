@@ -12,10 +12,13 @@ export default function ServerAuthWrapper(io, options = {}) {
       watchPackets(socket);
       next();
 
-      if (handlers.server) await server(io, socket, handlers.server);
+      if (handlers.server) {
+        await server(io, socket, handlers.server);
+      }
 
-      if (handlers.credential)
+      if (handlers.credential) {
         await credential(io, socket, handlers.credential, options);
+      }
     });
   };
 }
