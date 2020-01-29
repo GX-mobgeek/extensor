@@ -19,6 +19,7 @@ export default function buildParser(dataStruct) {
   return {
     Encoder: encoder(dataStruct, idmap, schemas),
     Decoder: decoder(dataStruct, idmap, schemas),
+    idmap,
     schemas
   };
 }
