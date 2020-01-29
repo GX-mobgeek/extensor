@@ -86,7 +86,7 @@ describe("authentication", () => {
     init();
     ioServer.auth({
       async server() {
-        return true;
+        return { foo: "bar" };
       },
       async credential({ data: { token } }) {
         return token === 1;

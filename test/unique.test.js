@@ -1,11 +1,12 @@
 import { expect } from "chai";
+import debug from "debug";
 import {
   makeClient,
   makeServers,
   makeAdapter,
   makeThrowAdapter
 } from "./utils";
-import unique from "../src/unique";
+import unique, { debug as uniqueDebug } from "../src/unique";
 
 describe("unique connection", () => {
   let ioServer;
@@ -75,20 +76,6 @@ describe("unique connection", () => {
       }, 50);
     });
   });
-
-  it("renew the state when get in half of the timeout", done => {
-    unique(ioServer, { aliveTimeout: 100 });
-
-    const client = createClient();
-
-    client.on("connect", () => {
-      setTimeout(() => {
-        client.disconnect();
-        done();
-      }, 500);
-    });
-  });
-
   it("catch renew error", done => {
     const storage = makeThrowAdapter({ set: { count: 2, msg: "renewErr" } });
     function onError(err) {
@@ -96,11 +83,33 @@ describe("unique connection", () => {
       expect(err.local).to.be.eq("renew");
       done();
     }
-    unique(ioServer, { storage, onError, aliveTimeout: 1000 });
+    unique(ioServer, { storage, onError, aliveTimeout: 100 });
     createClient();
   });
 
-  it("catch error in middleware ", done => {
+  it("default error handler", done => {
+    debug.enable("extensor:unique");
+    const logs = [];
+    uniqueDebug.log = function() {
+      logs.push(arguments[2]);
+    };
+
+    const storage = makeThrowAdapter({
+      set: { count: 1, msg: "defaultErrorHandlerCheck" }
+    });
+
+    unique(ioServer, { storage });
+    createClient();
+
+    setTimeout(() => {
+      debug.disable("extensor:unique");
+
+      expect(logs).to.contain("defaultErrorHandlerCheck");
+      done();
+    }, 50);
+  });
+
+  it("catch error in middleware", done => {
     const storage = makeThrowAdapter({
       get: { count: 1, msg: "middlewareError" }
     });
@@ -114,7 +123,7 @@ describe("unique connection", () => {
     createClient();
   });
 
-  it("catch error on disconnect event ", done => {
+  it("catch error on disconnect event", done => {
     const storage = makeThrowAdapter({
       del: { count: 1, msg: "disconnectDelError" }
     });
@@ -127,10 +136,6 @@ describe("unique connection", () => {
     unique(ioServer, { storage, onError });
     const client = createClient();
 
-    client.on("connect", () => {
-      setTimeout(() => {
-        client.disconnect();
-      }, 50);
-    });
+    client.on("connect", () => client.disconnect());
   });
 });
