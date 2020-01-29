@@ -23,10 +23,6 @@ export default function createInMemoryStorage() {
       store[key] = { expire, value };
       return true;
     },
-    del: async key => {
-      delete store[key];
-
-      return true;
-    }
+    del: async key => delete store[key]
   };
 }
