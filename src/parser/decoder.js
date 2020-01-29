@@ -22,7 +22,7 @@ const createDecoder = (map, idmap, schemas) =>
         debug("json packet %j", decoded);
         this.emit("decoded", decoded);
       } catch (e) {
-        debug("json error, packet: %j, error: %s", string, e.message);
+        debug("json error, packet: %s, error: %s", string, e.message);
         this.emit("decoded", {
           type: TYPES.ERROR,
           data: `parser error: ${e.message}`
