@@ -2,7 +2,7 @@
 import { debug as Debug } from "../utils";
 import { schema, TYPES } from "./utils";
 
-const debug = Debug.extend("parser").extend("encoder");
+export const debug = Debug.extend("parser").extend("encoder");
 
 const createEncoder = (map, idmap, schemas) => {
   return class Encoder {
@@ -11,7 +11,7 @@ const createEncoder = (map, idmap, schemas) => {
       switch (packet.type) {
         case TYPES.EVENT:
         case TYPES.BINARY_EVENT:
-          if (packet.type === TYPES.EVENT && !(packet.data[0] in map)) {
+          if (!(packet.data[0] in map)) {
             return callback([this.json(packet)]);
           }
 
@@ -33,10 +33,6 @@ const createEncoder = (map, idmap, schemas) => {
 
     pack(packet) {
       try {
-        if (packet.type === TYPES.BINARY_EVENT && !(packet.data[0] in map)) {
-          return this.json(packet);
-        }
-
         const eventName = packet.data[0];
         const eventSchema = schemas[eventName];
 
