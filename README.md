@@ -153,13 +153,13 @@ ioServer.on("connection", socket => {
 auth(ioClient);
 
 ioClient.auth(result => {
-  if (!result) console.log("you should not pass!");
+  if (!result) console.log("you shall not pass!");
 });
 
 // Support to async/await
 (async function() {
   const result = await ioClient.auth();
-  if (result) console.log("ok, you should pass");
+  if (result) console.log("ok, you can pass");
 })();
 ```
 
