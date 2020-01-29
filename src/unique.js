@@ -1,13 +1,15 @@
-import createInMemoryStorage from "../in-memory-storage";
-import { debug as Debug, slugify } from "../utils";
+import createInMemoryStorage from "./in-memory-storage";
+import { debug as Debug, slugify } from "./utils";
 
-const debug = Debug.extend("unique");
+export const debug = Debug.extend("unique");
 
 export default function uniqueConnections(
   io,
   {
     identifier,
-    onError = false,
+    onError = e => {
+      debug("%s: %s", e.local, e.message);
+    },
     storage = createInMemoryStorage(),
     aliveTimeout = 60000 * 5
   } = {}
@@ -29,17 +31,14 @@ export default function uniqueConnections(
       await storage.set(key, 1, aliveTimeout * 1000);
 
       /**
-       * If you use in a cluster and some node get crash,
+       * If in a cluster and some node get crash,
        * this approach prevent the false positive of an active connection
        */
       const interval = setInterval(
         key => {
           storage.set(key, 1, aliveTimeout * 1000).catch(e => {
-            if (onError) {
-              const err = new Error(e.message);
-              err.local = "renew";
-              onError(err, socket);
-            }
+            e.local = "renew";
+            onError(e, socket);
           });
         },
         aliveTimeout / 2,
@@ -49,22 +48,18 @@ export default function uniqueConnections(
       socket.on("disconnect", () => {
         clearInterval(interval);
         storage.del(key).catch(e => {
-          if (onError) {
-            const err = new Error(e.message);
-            err.local = "disconnect";
-            onError(err, socket);
-          }
+          e.local = "disconnect";
+          onError(e, socket);
         });
       });
 
       next();
     } catch (e) {
       debug(`error in check of socket id "${socket.id}": ${e.message}`);
-      if (typeof onError === "function") {
-        const err = new Error(e.message);
-        err.local = "middleware";
-        onError(err, socket);
-      }
+
+      e.local = "middleware";
+      onError(e, socket);
+
       return next(new Error("multiple check fail"));
     }
   });
