@@ -7,20 +7,19 @@
 [![Known Vulnerabilities](https://snyk.io//test/github/GX-mobgeek/extensor/badge.svg?targetFile=package.json)](https://snyk.io//test/github/GX-mobgeek/extensor?targetFile=package.json)
 [![Code Coverage](https://codecov.io/gh/GX-mob/extensor/branch/master/graph/badge.svg)](https://codecov.io/gh/GX-mob/extensor/branch/master)
 
-### A javascript library that extend functions to the socket.io, work on server and browser.
+### A javascript library that extend functions to the socket.io.
 
 **Currently implemented:**
 
-- Authentication with 3 methods options;
-  - Server validation also "AUTO";
-  - User credential, and:
-  - Mixed: Server with credential.
-- Block multiple connections of same origin and;
+- Handler authentication;
+- Grant unique connections;
 - Made easy the serialization with schemapack.
 
 **Next:**
 
 - Serialization in acknowledge
+
+v0.1 [see(#http://ww.com.br)]
 
 **PR's are welcome.**
 
@@ -37,14 +36,22 @@
 npm install extensor
 ```
 
+## Supporing handshaking
+
+```javascript
+// both, server and client
+import auth from "extensor/auth";
+// or import just the client
+import auth from "extensor/auth/client";
+```
+
 ## Examples
 
 ### Binary serialization with schemapack
 
 ```javascript
-import { buildParser } from "extensor";
-// or
-const { buildParser } = require("extensor");
+const parser = require("extensor/parser"); // or
+const { parser } = require("extensor");
 
 // create a schema map
 const parser = buildParser({
@@ -118,37 +125,42 @@ const src = io({
 
 ### "Automatic"
 
-You validate a token provide by any method of socket.io, or another criteria and send the result to client.
+You validate a token provide by handshake request of socket.io, or another criteria and send the result to client.
 
 ```javascript
-// Server
-import { withAuth } from "extensor";
-// or
-const { withAuth } = require("extensor");
+/**
+ * Server side
+ */
+import { auth } from "extensor";
 
-withAuth(
-  ioServer,
-  {
-    method: withAuth.AUTO
-  },
-  response => {
-    // response( /* status of authentication */, /* atachs props in socket object */ )
-    return response(true, { userId: "123" });
-  }
-);
+auth(ioServer);
 
-// Client
-withAuth(
-  ioClient,
-  {
-    method: withAuth.AUTO
-  },
-  result => {
-    if (result) {
-      alert("Authorized!");
-    }
+ioServer.auth({
+  async server() {
+    return true;
   }
-);
+});
+
+ioServer.on("connection", socket => {
+  // Socket will be connect before allow of auth handler but,
+  // blocking the not allowed events.
+});
+
+/**
+ * Client side
+ */
+
+auth(ioClient);
+
+ioClient.auth(result => {
+  if (!result) console.log("you should not pass!");
+});
+
+// Support to async/await
+(async function() {
+  const result = await ioClient.auth();
+  if (result) console.log("ok, you should pass");
+})();
 ```
 
 ### With credential
@@ -157,153 +169,80 @@ When a client connect, the server wait the event sent from user with credentials
 
 ```javascript
 // Server
-withAuth(
-  ioServer,
-  {
-    method: withAuth.CREDENTIAL,
-    timeout: 10000 // optional, default: false
-  },
-  (user, response) => {
-    // user = the data sent by user
-    respone(user.login === "ferco" && user.pw === "123");
+auth(ioServer);
+
+ioServer.auth({
+  async credential(ctx) {
+    const { data, socket } = ctx;
+
+    return data.login === "foo" && data.pw === "bar"; //foobar makes cuscuz
   }
-);
+});
 
 // Client
-withAuth(
-  ioClient,
-  {
-    method: withAuth.CREDENTIAL,
-    timeout: 10000 // optional, default: false
-  },
-  authorize => {
-    authorize({ login: "ferco", pw: "123" }, result => {
-      if (result) {
-        alert("Authorized!");
-      }
-    });
-  }
-);
+auth(ioClient);
+
+ioClient.auth({ login: "foo", pw: "bar" }, result => {
+  console.log("nordeste love's cuscuz");
+});
 ```
 
 ### Mixed authorization
 
-Combine the two method, automatic is called first.
+Combine the two method.
 
 ```javascript
 // Server
-withAuth(
-  ioServer,
-  {
-    method: withAuth.MIXED,
-    timeout: 10000 // optional, default: false
+ioServer.auth({
+  // this will be called first
+  async server(ctx){
+    ctx.done(true);
   },
-  (response, socket) => {
-    response(socket.handshake.address === "myip");
-  },
-  (user, response) => {
-    // user = the data sent by user
-    respone(user.login === "ferco" && user.pw === "123");
+  async credential(ctx){
+    const { data } = ctx;
+    return { data.nickname };
   }
-);
+});
+
+ioServer.on("connection", socket => {
+  console.log(socket.nickname); // undefined
+
+  socket.on("message", message => {
+    console.log(socket.nickname, message); // foo, hi
+  });
+});
 
 // Client
-withAuth(
-  ioClient,
-  {
-    method: withAuth.MIXED
-  },
-  authorize => {
-    if (!authorized) {
-      return alert("Fail on first-step¹");
-    }
+ioClient.auth( result => {
+  if(result)
+  ioClient.auth({ nickname: "foo" }, result => {
+    console.log(ioClient.nickname); // foo
 
-    authorize({ login: "ferco", pw: "123" }, result => {
-      if (result) {
-        alert("Authorized!");
-      }
-    });
-  }
-);
+    ioClient.emit("message", "hi");
+  })
+})
 ```
 
 ## Blocking multiple connections
 
-You need a external storage to ensure the blocking.
+If use in a cluster, you need an external storage like redis or memcached with extensor adapter to work fine.
 
 ```javascript
 // Server
-import { forceOne } from "extensor";
-// or
-const { forceOne } = require("extensor");
+const extensor = require("extensor").unique;
 
-forceOne(ioServer, {
-  adapter: forceOne.adapters.redis(redisClient),
-  id: forceOne.IP // identification
+extensor.unique(ioServer, {
+  adapter: extensor.adapters.redis(redisClient),
+  id: extensor.unique.IP // identification
 });
 
 // Client
-forceOne(ioClient, () => {
-  alert("We not allow multiple connections.");
+ioClient.on("error", err => {
+  if (err === "multiple attemp") {
+    alert("two connections are not allowed");
+  }
 });
 ```
-
-**But you can do some like that.**
-
-```javascript
-const adapterStorage = {};
-
-const customAdapter = {
-  get: key =>
-    new Promise((resolve, reject) => {
-      try {
-        if (!(key in adapterStorage)) {
-          return resolve(null);
-        }
-
-        let { expire, value } = adapterStorage[key];
-
-        if (expire !== false && expire < Date.now()) {
-          delete adapterStorage[key];
-          return resolve(null);
-        }
-
-        return resolve(value);
-      } catch (e) {
-        reject(e);
-      }
-    }),
-  set: (key, value, expire = false) =>
-    new Promise((resolve, reject) => {
-      try {
-        if (expire !== false) {
-          // expire defined aways in minutes, convert to ms
-          expire *= 60000;
-          expire += Date.now();
-        }
-
-        adapterStorage[key] = { expire, value };
-        return resolve(true);
-      } catch (e) {
-        reject(e);
-      }
-    }),
-  del: key =>
-    new Promise((resolve, reject) => {
-      try {
-        if (key in adapterStorage) {
-          delete adapterStorage[key];
-        }
-
-        return resolve(true);
-      } catch (e) {
-        reject(e);
-      }
-    })
-};
-```
-
-#### I think that i don't need to warning, but this approach not work in clusters.
 
 &nbsp;
 
@@ -319,30 +258,20 @@ Navigate to http://localhost:9001
 
 ## API
 
-#### `buildParser( Object ): { Encoder, Decoder, parser }`
+#### `parser( map: Object ): { Encoder, Decoder, parser, idmap }`
 
-Create a parser for Socket.io instance and encode/decode functions built by schemapack for each schema.
+Create a parser for Socket.io with schemapack serialization.
 
-#### `withAuth( io: Socket.io Engine, options: { method: AUTO | CREDENTIAL | MIXED, timeout?: Number}, step1: Function[, step2: Function ] ): void`
+#### `auth( io: Socket.io Engine[, options: ExtensorOptions ]): void`
 
-Create a wrapper to handle the authorization
+Create a wrapper to handle authentication/authorization
 
-#### Server `forceOne( options: { adapter: redis | ioRedis | memcached | custom , id?: IP | IP_UA | string } )`
+#### `unique( [ options: ExtensorOptions ] )`
 
-```
-id: Identification
-	disallowMultiplicity.IP: By ip
-	disallowMultiplicity.IP_UA: By ip + user agent
-	string: By value in socket property with this name
-```
-
-#### Client `forceOne( onBlock: Function )`
-
-Create a step to block multiple connections
+Create a step to force a unique connection
 
 ## License
 
 MIT
-
 
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FGX-mobgeek%2Fextensor.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2FGX-mobgeek%2Fextensor?ref=badge_large)
