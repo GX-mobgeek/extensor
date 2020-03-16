@@ -1,5 +1,5 @@
 import { Socket } from "socket.io";
-import { kSocketAuthStatus, kSocketAuthTimeout } from "./src/symbols";
+import { kSocketAuthStatus, kSocketAuthTimeout } from "./symbols";
 ///<reference types="socket.io" />
 ///<reference types="socket.io-client" />
 
@@ -20,7 +20,7 @@ declare namespace Extensor {
   type Options = {
     /**
      * Authorization timeout, in ms
-     * @default false
+     * @default false // Don't set timeout
      */
     timeout?: number | boolean;
 
@@ -56,12 +56,10 @@ declare namespace Extensor {
 
   type ServerSocket = SocketIO.Socket & {
     [prop: string]: any;
-    [kSocketAuthStatus]: boolean;
-    [kSocketAuthTimeout]: NodeJS.Timeout;
     /**
      * Handler socket authentication
      */
-    auth: (handler: Extensor.AuthHandler, options?: Options) => Promise<void>;
+    auth: Promise<unknown>;
   };
 
   type ClientSocket = SocketIOClient.Socket & {
@@ -69,19 +67,23 @@ declare namespace Extensor {
     /**
      * Handler socket authentication
      */
-    auth: (data: any) => Promise<string | object>;
+    auth: Promise<unknown>;
   };
 
-  type AuthHandler = (
+  type AuthHandler = (ctx: {
+    /**
+     * Socket that requests authentication
+     */
+    socket: SocketIO.Socket;
     /**
      * Sent data
      */
-    data: any,
+    data: any;
     /**
      * Resolve authentication
      */
-    done: (response: AuthDoneResponse) => void
-  ) => AuthDoneResponse | void | Promise<AuthDoneResponse>;
+    done: (response: AuthDoneResponse) => void;
+  }) => AuthDoneResponse | void | Promise<AuthDoneResponse>;
 
   type AuthDoneResponse = boolean | object | Error;
 

@@ -1,5 +1,6 @@
 import ExtensorLocalStorage from "./storage-adapters/local";
 import { ServerDebug, slugify } from "./utils";
+import { kExtensorAuthHandling } from "./symbols";
 
 export const debug = ServerDebug.extend("unique");
 
@@ -18,6 +19,10 @@ export default function uniqueConnections(
 
   io.use(async (socket, next) => {
     try {
+      if ((io as any)[kExtensorAuthHandling] === true && identifier) {
+        await (socket as any).auth;
+      }
+
       const id = getId(socket, identifier);
       const key = `extensorUniqueState:${id}`;
 

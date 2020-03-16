@@ -1,12 +1,18 @@
-import client from "./client";
-import server from "./server";
-import { isClient } from "../utils";
+import clientHandler from "./client";
+import serverHandler from "./server";
 
-export default function authWrapper(
-  target: SocketIO.Server | SocketIOClient.Socket,
+export function server(
+  io: SocketIO.Server,
+  handler: Extensor.AuthHandler,
   options?: Extensor.Options
 ) {
-  return isClient(target)
-    ? client(target as SocketIOClient.Socket)
-    : server(target as SocketIO.Server, options);
+  return serverHandler(io, handler, options);
+}
+
+export function client(
+  socket: SocketIOClient.Socket,
+  data: any,
+  callback?: (error?: Error) => void
+): Promise<unknown> | void {
+  return clientHandler(socket, data, callback);
 }
