@@ -1,5 +1,5 @@
 import { Socket } from "socket.io";
-import { kSocketAuthStatus, kSocketAuthTimeout } from "./src/symbols";
+import { kSocketAuthStatus, kSocketAuthTimeout } from "./symbols";
 ///<reference types="socket.io" />
 ///<reference types="socket.io-client" />
 
@@ -56,8 +56,6 @@ declare namespace Extensor {
 
   type ServerSocket = SocketIO.Socket & {
     [prop: string]: any;
-    [kSocketAuthStatus]: boolean;
-    [kSocketAuthTimeout]: NodeJS.Timeout;
     /**
      * Handler socket authentication
      */
