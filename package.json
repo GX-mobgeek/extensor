@@ -15,7 +15,7 @@
     "test": "tsdx test --testTimeout 2000 --forceExit",
     "test:watch": "tsdx test --watch",
     "test:coverage": "tsdx test --coverage --testTimeout 2000 --forceExit",
-    "report-coverage": "npm run test:coverage --coverage && codecov",
+    "report-coverage": "npm run test:coverage && codecov",
     "lint": "tsdx lint ./src/**/*.ts --fix",
     "release": "npm run build && standard-version"
   },

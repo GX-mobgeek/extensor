@@ -1,4 +1,4 @@
-///<reference types="../extensor" />
+///<reference types="../src/extensor" />
 import { extend, withAuth, forceOne, buildParser } from "../src";
 import * as extendClient from "../src/client";
 import * as server from "../src/server";

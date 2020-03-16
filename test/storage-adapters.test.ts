@@ -1,3 +1,4 @@
+///<reference types="../src/extensor" />
 import { Redis, IORedis, Local } from "../src/storage-adapters";
 import redis from "redis";
 import ioRedis from "ioredis";

@@ -1,4 +1,4 @@
-///<reference types="../extensor" />
+///<reference types="../src/extensor" />
 import { Server } from "http";
 import { makeClient, makeServers } from "./mocks";
 import auth from "../src/auth";

@@ -1,3 +1,4 @@
+///<reference types="../src/extensor" />
 import debug from "debug";
 import { Server } from "http";
 import { makeClient, makeServers, makeThrowAdapter } from "./mocks";
