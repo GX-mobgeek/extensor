@@ -1,5 +1,5 @@
 {
-  "include": ["src", "types", "extensor.d.ts"],
+  "include": ["src", "types", "./src/extensor.d.ts"],
   "compilerOptions": {
     "target": "es5",
     "module": "esnext",
