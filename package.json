@@ -2,29 +2,26 @@
   "name": "extensor",
   "version": "0.1.5",
   "description": "Extra funcionalities to socket.io",
-  "main": "index",
-  "type": "module",
+  "main": "dist/index.js",
+  "module": "dist/extensor.esm.js",
+  "typings": "dist/index.d.ts",
+  "files": [
+    "dist/"
+  ],
   "scripts": {
-    "example": "npm run build && webpack --config ./example/webpack.config.js & npx nodemon ./example/server.js",
-    "build": "babel ./src --out-dir ./lib",
-    "test": "nyc mocha --require esm --reporter spec --slow 200 --bail --timeout 10000 --exit",
-    "test:all": "npm test --file ./test/*.test.js",
-    "test:memory-storage": "npm test ./test/local-storage.test.js",
-    "test:unique": "npm test --file ./test/unique.test.js",
-    "test:auth": "npm test --file ./test/auth.test.js",
-    "test:common": "npm test --file ./test/common.test.js",
-    "test:parser": "npm test --file ./test/parser.test.js",
-    "test:watch": "nyc mocha --require esm --reporter spec --slow 200 --bail --watch --exit test/*.test.js",
-    "report-coverage": "nyc report --reporter=text-lcov > coverage.lcov && codecov",
-    "lint": "./node_modules/.bin/eslint ./src/**",
+    "example_": "npm run build && webpack --config ./example/webpack.config.js & npx nodemon ./example/server.js",
+    "example": "npm run build && webpack --config ./example/webpack.config.js & node ./example/server.js",
+    "build": "tsdx build",
+    "test": "tsdx test",
+    "test:watch": "tsdx test --watch",
+    "test:coverage": "tsdx test --coverage",
+    "report-coverage": "tsdx test --coverage && codecov",
+    "lint": "tsdx lint ./src/**/*.ts --fix",
     "release": "npm run build && standard-version"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/GX-mobgeek/extensor.git"
-  },
-  "esm": {
-    "cjs": true
   },
   "keywords": [
     "socket.io",
@@ -45,31 +42,24 @@
     "schemapack": "^1.4.2"
   },
   "devDependencies": {
-    "@babel/cli": "^7.6.2",
-    "@babel/core": "^7.6.2",
-    "@babel/preset-env": "^7.6.2",
-    "babel-loader": "^8.0.6",
-    "babel-plugin-add-module-exports": "^1.0.2",
+    "@types/component-emitter": "^1.2.8",
+    "@types/debug": "^4.1.5",
+    "@types/expect": "^24.3.0",
+    "@types/ioredis": "^4.14.9",
+    "@types/jest": "^25.1.4",
+    "@types/redis": "^2.8.16",
+    "@types/socket.io": "^2.1.4",
+    "@types/socket.io-client": "^1.4.32",
     "bytes": "^3.1.0",
-    "chai": "^4.2.0",
-    "eslint": "^6.5.1",
-    "eslint-config-prettier": "^6.3.0",
-    "eslint-config-standard": "^14.1.0",
-    "eslint-plugin-import": "^2.18.2",
-    "eslint-plugin-node": "^10.0.0",
-    "eslint-plugin-prettier": "^3.1.1",
-    "eslint-plugin-promise": "^4.2.1",
-    "eslint-plugin-standard": "^4.0.1",
-    "esm": "^3.2.25",
     "husky": "^3.1.0",
+    "ioredis": "^4.16.0",
     "lint-staged": "^9.5.0",
-    "mocha": "^6.2.0",
-    "nyc": "^14.1.1",
+    "redis": "^3.0.2",
     "socket.io": "^2.3.0",
     "socket.io-client": "^2.3.0",
-    "standard-version": "^7.0.0",
-    "webpack": "^4.41.0",
-    "webpack-cli": "^3.3.9"
+    "standard-version": "^7.1.0",
+    "tsdx": "^0.12.3",
+    "typescript": "^3.8.3"
   },
   "publishConfig": {
     "access": "public"
@@ -80,8 +70,8 @@
     }
   },
   "lint-staged": {
-    "*.js": [
-      "eslint --fix",
+    "*.ts": [
+      "npm run lint --fix",
       "git add"
     ]
   }

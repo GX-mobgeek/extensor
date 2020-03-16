@@ -115,7 +115,4 @@ dist/
 tmp/
 temp/
 
-# dist files
-lib/
-
 # End of https://www.gitignore.io/api/node,code
