@@ -1,23 +1,23 @@
 ///<reference types="../src/extensor" />
 import { Server } from "http";
 import { makeClient, makeServers } from "./mocks";
-import auth from "../src/auth";
+import * as auth from "../src/auth";
 
 describe("authentication", () => {
-  let ioServer: SocketIO.Server;
+  let io: SocketIO.Server;
   let httpServer: Server;
   let stop: () => void;
   let client: SocketIOClient.Socket;
 
-  const init = (options?: Extensor.Options) => {
+  const init = () => {
     const servers = makeServers();
-    ioServer = servers.ioServer;
+    io = servers.ioServer;
     httpServer = servers.httpServer;
     stop = servers.stop;
-    auth(ioServer, options);
     client = makeClient(httpServer, { autoConnect: false });
-    auth(client);
   };
+
+  beforeEach(() => init());
 
   afterEach(() => {
     client.close();
@@ -25,16 +25,13 @@ describe("authentication", () => {
   });
 
   test("prevent event when socket not authorized yet", done => {
-    init();
     let value: number;
 
-    ioServer.on("connection", async (socket: Extensor.ServerSocket) => {
-      socket.auth((_data, done) => {
-        setTimeout(() => {
-          done(true);
-        }, 50);
-      });
+    auth.server(io, ({ data, done }) => {
+      setTimeout(() => done(data === 123), 50);
+    });
 
+    io.on("connection", async socket => {
       socket.on("test", sent => {
         value = sent;
       });
@@ -49,7 +46,7 @@ describe("authentication", () => {
     client.on("connect", async () => {
       client.emit("test", 0);
 
-      await (client as Extensor.ClientSocket).auth(123);
+      await auth.client(client, 123);
 
       client.emit("test", 1);
       client.emit("end");
@@ -57,12 +54,12 @@ describe("authentication", () => {
   });
 
   it("allow", done => {
-    init();
+    auth.server(io, ({ data }) => {
+      return data.token === 1;
+    });
 
-    ioServer.on("connection", async (socket: Extensor.ServerSocket) => {
-      await socket.auth(data => {
-        return data.token === 1;
-      });
+    io.on("connection", async (socket: Extensor.ServerSocket) => {
+      await socket.auth;
 
       done();
     });
@@ -70,56 +67,50 @@ describe("authentication", () => {
     client.open();
 
     client.on("connect", async () => {
-      expect(await (client as Extensor.ClientSocket).auth({ token: 1 })).toBe(
-        true
-      );
+      expect(await auth.client(client, { token: 1 })).toBe(true);
     });
   });
 
   it("deny", done => {
-    init();
-    const errorMessage = "error message";
+    const message = "error message";
 
-    ioServer.on("connection", (socket: Extensor.ServerSocket) => {
-      socket
-        .auth(() => {
-          throw new Error(errorMessage);
-        })
-        .catch(() => {});
+    auth.server(io, () => {
+      throw new Error(message);
+    });
+
+    io.on("connection", socket => {
+      (socket as Extensor.ServerSocket).auth.catch((_err: Error) => {});
     });
 
     client.open();
     client.on("connect", () => {
-      (client as Extensor.ClientSocket).auth({ token: 1 }).catch(error => {
-        expect(error).toBe(errorMessage);
+      auth.client(client, { token: 1 }, error => {
+        if (error) {
+          expect((error as any).message).toBe(message);
+        }
+      });
+
+      client.on("disconnect", () => {
         done();
       });
     });
   });
 
   it("merge props to client socket", done => {
-    init();
-
-    ioServer.on("connection", async (socket: Extensor.ServerSocket) => {
-      await socket.auth(async data => {
-        return data.token === 1 && { userId: 123 };
-      });
+    auth.server(io, ({ data }) => {
+      return data.token === 1 && { userId: 123 };
     });
 
     client.open();
     client.on("connect", async () => {
-      await (client as Extensor.ClientSocket).auth({ token: 1 });
-      expect((client as Extensor.ClientSocket).userId).toBe(123);
+      await auth.client(client, { token: 1 });
+      expect((client as any).userId).toBe(123);
       done();
     });
   });
 
   it("timeout", done => {
-    init();
-
-    ioServer.on("connection", async (socket: Extensor.ServerSocket) => {
-      socket.auth((_data, done) => done(true), { timeout: 0.2 });
-    });
+    auth.server(io, () => true, { timeout: 0.2 });
 
     client.open();
 
@@ -131,26 +122,21 @@ describe("authentication", () => {
   });
 
   it("clear timeout after authentication", done => {
-    init();
-
-    ioServer.on("connection", async (socket: Extensor.ServerSocket) => {
-      socket.auth((_data, done) => done(true), { timeout: 20000 });
-    });
+    auth.server(io, () => true, { timeout: 20000 });
 
     client.open();
     client.on("connect", async () => {
-      await (client as Extensor.ClientSocket).auth({ token: 1 });
+      await auth.client(client, true);
       done();
     });
   });
 
   it("extend authorized events", done => {
-    init({ authorizedEvents: ["foo"] });
     let i = 0;
 
-    ioServer.on("connection", async (socket: Extensor.ServerSocket) => {
-      socket.auth((_data, done) => done(true));
+    auth.server(io, () => true, { authorizedEvents: ["foo"] });
 
+    io.on("connection", async (socket: Extensor.ServerSocket) => {
       socket.on("bar", () => {
         ++i;
       });
@@ -164,7 +150,7 @@ describe("authentication", () => {
     client.on("connect", async () => {
       client.emit("bar", "");
       client.emit("foo", "");
-      await (client as Extensor.ClientSocket).auth({ token: 1 });
+      await auth.client(client, true);
       expect(i).toBe(1);
       done();
     });

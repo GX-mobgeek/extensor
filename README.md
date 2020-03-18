@@ -7,7 +7,7 @@
 [![Known Vulnerabilities](https://snyk.io//test/github/GX-mobgeek/extensor/badge.svg?targetFile=package.json)](https://snyk.io//test/github/GX-mobgeek/extensor?targetFile=package.json)
 [![Code Coverage](https://codecov.io/gh/GX-mob/extensor/branch/master/graph/badge.svg)](https://codecov.io/gh/GX-mob/extensor/branch/master)
 
-### A javascript library that extend functions to the socket.io.
+### Extend functions to the socket.io.
 
 **Currently implemented:**
 
@@ -19,16 +19,13 @@
 
 - Serialization in acknowledge
 
-v0.1 [see(#http://ww.com.br)]
-
 **PR's are welcome.**
 
 ## Contents
 
 - [Install](#Install)
-- [Examples](#Examples)
-- [Chat](#chat-example)
 - [API](#API)
+- [Benchmarks](#Benchmarks)
 
 ## Install
 
@@ -36,25 +33,15 @@ v0.1 [see(#http://ww.com.br)]
 npm install extensor
 ```
 
-## Supporing handshaking
-
-```javascript
-// both, server and client
-import auth from "extensor/auth";
-// or import just the client
-import auth from "extensor/auth/client";
-```
-
 ## Examples
 
 ### Binary serialization with schemapack
 
 ```javascript
-const parser = require("extensor/parser"); // or
-const { parser } = require("extensor");
+import { parser } from "extensor";
 
 // create a schema map
-const parser = buildParser({
+const parser = parser({
   message: {
     // Convert the event name to int
     // it's a method to minimize the packet size
@@ -73,10 +60,10 @@ const src = io({
 });
 ```
 
-- All emitted events "message" are binary, according with the schema,
-- For the events that not in list, JSON is used.
+- All emitted "message" events are binary, according with the schema;
+- For the events that not in list, JSON parser is used.
 - Here we not use **2 packets like in socket.io-parser binary event**.
-- The encode/decode schemapack functions is accessible in parser.schemas.
+- The encode/decode schemapack functions is accessible in parser.parsers.
 
 **Schemapack are the fastest and smallest JavaScript object serialization library.**
 
@@ -123,138 +110,83 @@ const src = io({
 
 ## Authentication
 
-### "Automatic"
-
-You validate a token provide by handshake request of socket.io, or another criteria and send the result to client.
+### Server
 
 ```javascript
-/**
- * Server side
- */
+import SocketIO from "socket.io";
 import { auth } from "extensor";
 
-auth(ioServer);
+const io = SocketIO();
 
-ioServer.auth({
-  async server() {
-    return true;
-  }
+auth(io, ({ socket, data }) => {
+  if (data.token === 1) return { userId: 123 };
+
+  return false;
 });
 
-ioServer.on("connection", socket => {
-  // Socket will be connect before allow of auth handler but,
-  // blocking the not allowed events.
+io.on("connection", async socket => {
+  await socket.auth;
+
+  socket.on("msg", msg => console.log(msg));
 });
-
-/**
- * Client side
- */
-
-auth(ioClient);
-
-ioClient.auth(result => {
-  if (!result) console.log("you shall not pass!");
-});
-
-// Support to async/await
-(async function() {
-  const result = await ioClient.auth();
-  if (result) console.log("ok, you can pass");
-})();
 ```
 
-### With credential
-
-When a client connect, the server wait the event sent from user with credentials
+### Client
 
 ```javascript
-// Server
-auth(ioServer);
+import SocketIOClient from "socket.io-client";
+import { auth } from "extensor".
 
-ioServer.auth({
-  async credential(ctx) {
-    const { data, socket } = ctx;
+const socket = SocketIOClient();
 
-    return data.login === "foo" && data.pw === "bar"; //foobar makes cuscuz
-  }
-});
+socket.on("connect", () => {
+  await auth(socket, { token: 1 });
 
-// Client
-auth(ioClient);
-
-ioClient.auth({ login: "foo", pw: "bar" }, result => {
-  console.log("nordeste love's cuscuz");
+  console.log(socket.userId); // => 123
 });
 ```
 
-### Mixed authorization
-
-Combine the two method.
-
-```javascript
-// Server
-ioServer.auth({
-  // this will be called first
-  async server(ctx){
-    ctx.done(true);
-  },
-  async credential(ctx){
-    const { data } = ctx;
-    return { data.nickname };
-  }
-});
-
-ioServer.on("connection", socket => {
-  console.log(socket.nickname); // undefined
-
-  socket.on("message", message => {
-    console.log(socket.nickname, message); // foo, hi
-  });
-});
-
-// Client
-ioClient.auth( result => {
-  if(result)
-  ioClient.auth({ nickname: "foo" }, result => {
-    console.log(ioClient.nickname); // foo
-
-    ioClient.emit("message", "hi");
-  })
-})
-```
+&nbsp;
+&nbsp;
 
 ## Blocking multiple connections
 
-If use in a cluster, you need an external storage like redis or memcached with extensor adapter to work fine.
+To use in a cluster, you need an external storage, current have adapters for redis and ioredis modules.
+
+### Server
 
 ```javascript
-// Server
-const extensor = require("extensor").unique;
+import { unique, adapters } from "extensor";
 
-extensor.unique(ioServer, {
-  adapter: extensor.adapters.redis(redisClient),
-  id: extensor.unique.IP // identification
+...
+
+unique(io, {
+  storage: adapters.IORedis(new Redis()) // default stores in process object
 });
 
-// Client
-ioClient.on("error", err => {
+```
+
+To catch a multiple attemp on client:
+
+```javascript
+socket.on("error", err => {
   if (err === "multiple attemp") {
-    alert("two connections are not allowed");
+    alert("you already connected");
   }
 });
 ```
 
 &nbsp;
 
-## Chat example
+## Benchmarks
 
-Simple chat application with a byte counter that create two connections, one using schemapack parser another using the default, for comparison purpose.
+### Schemapack
+
+shcemapack are awesome, more faster serialization and more smallest packet size than any other serializer.
 
 ```shell
-npm run example
+npm run benchmarks
 ```
-
-Navigate to http://localhost:9001
 
 ## API
 

@@ -1,40 +1,33 @@
 ///<reference types="../src/extensor" />
-import { extend, withAuth, forceOne, buildParser } from "../src";
-import * as extendClient from "../src/client";
-import * as server from "../src/server";
+import { auth, unique, withAuth, forceOne, buildParser } from "../src";
 import { makeClient, makeServers } from "./mocks";
 
 describe("common", () => {
   it("both auth methods and unique connections", done => {
     const { ioServer, httpServer } = makeServers();
-    extend(ioServer);
-
-    ioServer.on("connection", (socket: Extensor.ServerSocket) => {
-      socket.auth(data => {
-        return data.token === 1;
-      });
+    auth.server(ioServer, ({ socket, data }) => {
+      (socket as any).userId = data.token;
+      return data.token === 1;
     });
 
-    const client: SocketIOClient.Socket = makeClient(httpServer);
+    unique(ioServer, { identifier: "userId" });
 
-    extend(client);
+    const conn = makeClient(httpServer);
+    const conn2 = makeClient(httpServer);
 
-    client.on("connect", async () => {
-      await (client as Extensor.ClientSocket).auth({ token: 1 });
-      done();
+    conn.on("connect", async () => {
+      auth.client(conn, { token: 1 });
     });
-  });
 
-  it("separated envoriments", () => {
-    const { ioServer, httpServer } = makeServers();
+    conn2.on("connect", async () => {
+      auth.client(conn2, { token: 1 });
+    });
 
-    server.extend(ioServer);
-
-    const client: SocketIOClient.Socket = makeClient(httpServer);
-
-    extendClient.auth(client);
-
-    (client as Extensor.ClientSocket).auth(client);
+    conn2.on("error", (err: string) => {
+      if (err === "multiple attemp") {
+        done();
+      }
+    });
   });
 });
 
