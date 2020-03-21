@@ -1,6 +1,6 @@
-import { debug as Debug } from "../utils";
+import { debug as Debug } from "../../utils";
 import Emitter from "component-emitter";
-import { schema, TYPES } from "./utils";
+import { TYPES } from "../utils";
 
 const debug = Debug.extend("parser").extend("decoder");
 
@@ -36,18 +36,20 @@ const createDecoder = (
 
     parseBinary(packet: Buffer) {
       try {
-        const { id, _id, data, nsp } = schema.decode(packet);
+        let view = new Uint8Array(packet);
+
+        const _id = view[0];
 
         const eventName: string = idmap[_id];
         const eventSchema = parsers[eventName];
 
-        const structuredPacket: Extensor.ParserPacket = {
-          type: TYPES.EVENT,
-          data: [eventName, eventSchema.decode(data)],
-          nsp
-        };
+        const structuredPacket: any = eventSchema.decode(packet);
+        structuredPacket.type = TYPES.EVENT;
+        structuredPacket.data = [eventName, structuredPacket.data];
 
-        if (id !== -1) structuredPacket.id = id;
+        if (structuredPacket.id === -1) {
+          delete structuredPacket.id;
+        }
 
         debug("decoded binary: %j", structuredPacket);
 

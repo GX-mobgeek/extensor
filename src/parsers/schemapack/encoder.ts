@@ -1,5 +1,5 @@
-import { debug as Debug } from "../utils";
-import { schema, TYPES } from "./utils";
+import { debug as Debug } from "../../utils";
+import { TYPES } from "../utils";
 
 export const debug = Debug.extend("parser").extend("encoder");
 
@@ -8,10 +8,7 @@ const createEncoder = (
   parsers: Extensor.ParsersList
 ) => {
   return class Encoder {
-    encode(
-      packet: Extensor.ParserPacket,
-      callback: (result: string[]) => void
-    ) {
+    encode(packet: Extensor.ParserPacket, callback: (result: any) => void) {
       debug("packet %j", packet);
       switch (packet.type) {
         case TYPES.EVENT:
@@ -41,14 +38,12 @@ const createEncoder = (
         const eventName = packet.data[0];
         const eventSchema = parsers[eventName];
 
-        const flatPacket = {
+        return eventSchema.encode({
           _id: schemas[eventName].id,
-          data: eventSchema.encode(packet.data[1]),
+          data: packet.data[1],
           nsp: packet.nsp,
           id: !("id" in packet) ? -1 : packet.id
-        };
-
-        return schema.encode(flatPacket);
+        });
       } catch (e) {
         debug("encode binary error: %s", e.message);
         return `{"type": ${TYPES.ERROR}, "data": "parser error"}`;

@@ -72,7 +72,7 @@ export function makeThrowAdapter(config: throwAdapterConfig = {}) {
 
 export const map = {
   chatMsg: {
-    id: 2,
+    id: 255,
     schema: {
       content: "string",
       ts: "varuint"

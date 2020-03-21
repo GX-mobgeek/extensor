@@ -67,46 +67,7 @@ const src = io({
 
 **Schemapack are the fastest and smallest JavaScript object serialization library.**
 
-### Packet size comparsion
-
-<details>
-  <summary>Packet sample</summary>
-{
-        "_id": "5d93b9d70cbdf21c0c6f56bb",
-        "index": 0,
-        "guid": "4c63d6bb-0680-4b2d-9343-919c9892d837",
-        "isActive": false,
-        "balance": 3312.84,
-        "picture": "http://placehold.it/32x32",
-        "age": 36,
-        "eyeColor": "brown",
-        "name": {
-            "first": "Clements",
-            "last": "Alford"
-        },
-        "range": [ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 ],
-        "friends": [
-            {
-                "id": 0,
-                "name": "Caldwell Martin"
-            },
-            {
-                "id": 1,
-                "name": "Ora Gould"
-            },
-            {
-                "id": 2,
-                "name": "Beryl Haney"
-            }
-        ]
-    }
-</details>
-
-- **Schemapack: ~162 bytes**
-- Default parser in binary(uses 2 packets): **~211 bytes**
-- Default parser: **~375 bytes**
-
-##### All supported types and more info, you find at [schemapack](https://github.com/phretaddin/schemapack#here-is-a-table-of-the-available-data-types-for-use-in-your-schemas)
+### All supported types and more info, you find at [schemapack](https://github.com/phretaddin/schemapack#here-is-a-table-of-the-available-data-types-for-use-in-your-schemas)
 
 ## Authentication
 
@@ -118,7 +79,7 @@ import { auth } from "extensor";
 
 const io = SocketIO();
 
-auth(io, ({ socket, data }) => {
+auth.server(io, ({ socket, data }) => {
   if (data.token === 1) return { userId: 123 };
 
   return false;
@@ -140,7 +101,7 @@ import { auth } from "extensor".
 const socket = SocketIOClient();
 
 socket.on("connect", () => {
-  await auth(socket, { token: 1 });
+  await auth.client(socket, { token: 1 });
 
   console.log(socket.userId); // => 123
 });
@@ -161,7 +122,7 @@ import { unique, adapters } from "extensor";
 ...
 
 unique(io, {
-  storage: adapters.IORedis(new Redis()) // default stores in process object
+  storage: adapters.IORedis(new Redis()) // default is stored in a simple local object
 });
 
 ```
@@ -182,25 +143,40 @@ socket.on("error", err => {
 
 ### Schemapack
 
-shcemapack are awesome, more faster serialization and more smallest packet size than any other serializer.
+Smallest packet size than any other serializer and fastest in some cases.
 
 ```shell
 npm run benchmarks
 ```
 
+### [See the charts](./benchmarks/README.md)
+
+### Size comparsion
+
+** beatiful graph **
+
+- **Schemapack: ~162 bytes**
+- Default parser in binary(uses 2 packets): **~211 bytes**
+- Default parser: **~375 bytes**
+  d
+
 ## API
 
-#### `parser( map: Object ): { Encoder, Decoder, parser, idmap }`
+#### `parser( map: Object ): { Encoder, Decoder, parsers, indexMap }`
 
-Create a parser for Socket.io with schemapack serialization.
+Create a schemapack parser for both Socket.io server and client.
 
-#### `auth( io: Socket.io Engine[, options: ExtensorOptions ]): void`
+#### `auth.server( io: SocketIO.Server, handler({ socket, data, done })[, options: Extensor.Options ]): void`
 
-Create a wrapper to handle authentication/authorization
+Create a server middleware to handle authentication
+
+#### `auth.client( io: SocketIOClient.Socket, data[, callback(error?: string)]): Promise | void`
+
+Send credential to server
 
 #### `unique( [ options: ExtensorOptions ] )`
 
-Create a step to force a unique connection
+Create a step on the server to force a single connection
 
 ## License
 

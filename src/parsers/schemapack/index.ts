@@ -2,7 +2,9 @@ import schemaBuilder from "./schema-builder";
 import encoder from "./encoder";
 import decoder from "./decoder";
 
-export default function buildParser(dataStruct: Extensor.ParserMapSchemas) {
+export default function buildSchemapackParser(
+  dataStruct: Extensor.ParserMapSchemas
+) {
   const { idmap, parsers } = schemaBuilder({ ...dataStruct });
 
   return {

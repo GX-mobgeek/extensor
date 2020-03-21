@@ -1,9 +1,10 @@
-import parser from "./parser";
-import * as auth from "./auth";
 import unique from "./unique";
+import * as parsers from "./parsers";
+import * as constants from "./constants";
+import * as auth from "./auth";
 import * as storageAdapters from "./storage-adapters";
 
-export { parser, auth, unique, storageAdapters };
+export { auth, constants, parsers, storageAdapters, unique };
 
 export function withAuth() {
   throw new Error(

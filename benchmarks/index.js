@@ -1,79 +1,198 @@
-const puppeteer = require("puppeteer");
+const { parsers } = require("../dist/");
+const SocketIOParser = require("socket.io-parser");
+const Msgpack = require("socket.io-msgpack-parser");
+const Benchmark = require("benchmark-util");
+const {
+  packetSchema,
+  simplePacket,
+  complexPacket,
+  generateGraphic
+} = require("./utils");
 
-async function generateGraphic(datasets) {
-  const browser = await puppeteer.launch({
-    defaultViewport: { width: 600, height: 600 }
-  });
-  const page = await browser.newPage();
-  await page.setContent(
-    `
-    <!DOCTYPE html>
-    <html>
-      <head>
-        <style>
-          body {
-            background: #fff;
-            color: #000;
-            margin: 0;
-          }
-          html,
-          body,
-          #chart {
-            width: 600px;
-            height: 600px;
-          }
-        </style>
-        <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0"></script>
-      </head>
-      <body>
-        <canvas id="chart"></canvas>
+// const sizeSuit = new Suite();
 
-        <script>
-          var ctx = document.getElementById("chart").getContext("2d");
-          var chart = new Chart(ctx, {
-            // The type of chart we want to create
-            type: "bar",
+/**
+ * Parsers
+ */
 
-            // The data for our dataset
-            data: {
-              labels: ${Object.keys(datasets)},
-              datasets: [
-                {
-                  label: "Op/Sec",
-                  backgroundColor: "rgb(0, 99, 255)",
-                  data: ${Object.values(datasets)}
-                }
-              ]
-            },
+const spParser = parsers.schemapack(packetSchema);
 
-            // Configuration options go here
-            options: {
-              aspectRatio: 1,
-              tooltips: {
-                mode: "index"
-              },
-              animation: {
-                duration: 0 // general animation time
-              }
-            }
-          });
-        </script>
-      </body>
-    </html>
-    `,
-    {
-      waitUntil: ["domcontentloaded", "load", "networkidle2"]
-    }
-  );
-
-  await page.screenshot({ path: "./benchmarks/benchmarks.png" });
-
-  await browser.close();
+const defaultParser = {
+  Encoder: new SocketIOParser.Encoder()
+};
+const schemapackParser = {
+  Encoder: new spParser.Encoder()
+};
+const msgPackParser = {
+  Encoder: new Msgpack.Encoder()
+};
+/**
+ * Tests
+ */
+function buildPacket(name, data) {
+  return {
+    type: 2,
+    data: [name, data],
+    options: { compress: true },
+    nsp: "/"
+  };
 }
 
-generateGraphic({
-  schemapack: 100,
-  "default socket.io": 70,
-  msgpack: 60,
-  JSON: 40
-});
+const packetEncode = (encoder, packet) =>
+  new Promise(resolve => {
+    encoder.encode(packet, ([result]) => {
+      resolve(result);
+    });
+  });
+
+const decodePacket = (Decoder, packet) =>
+  new Promise(resolve => {
+    const decoder = new Decoder();
+
+    decoder.on("decoded", packet => {
+      resolve(packet);
+    });
+
+    decoder.add(packet);
+  });
+
+async function testSize(name, packet) {
+  const spPacket = Buffer.from(
+    await packetEncode(schemapackParser.Encoder, packet)
+  ).byteLength;
+
+  const dfPacket = Buffer.from(
+    await packetEncode(defaultParser.Encoder, packet)
+  ).byteLength;
+
+  const msgpackPacket = Buffer.from(
+    await packetEncode(msgPackParser.Encoder, packet)
+  ).byteLength;
+  const jsonPacket = Buffer.from(JSON.stringify(packet)).byteLength;
+
+  const sizes = [
+    [`Schemapack ${spPacket} bytes`, spPacket],
+    [`Default ${spPacket} bytes`, dfPacket],
+    [`Msgpack ${msgpackPacket} bytes`, msgpackPacket],
+    [`JSON ${jsonPacket} bytes`, jsonPacket]
+  ];
+
+  const fsizes = sizes.sort((a, b) => (a[1] < b[1] ? -1 : a[1] > b[1] ? 1 : 0));
+
+  console.log(`------- Size ${name} -------\n`);
+  fsizes.map(([name]) => console.log(name));
+  console.log(`\n`);
+
+  await generateGraphic("Packet size", name, fsizes);
+}
+
+async function testEncoder(name, packet) {
+  console.log(`------- Encoder ${name} -------\n`);
+
+  const benchmark = new Benchmark();
+
+  benchmark
+    .add("Schemapack", async () => {
+      await packetEncode(schemapackParser.Encoder, packet);
+    })
+    .add("Default", async () => {
+      await packetEncode(defaultParser.Encoder, packet);
+    })
+    .add("Msgpack", async () => {
+      await packetEncode(msgPackParser.Encoder, packet);
+    })
+    .add("JSON", () => {
+      JSON.stringify(packet);
+    });
+
+  let results = await benchmark.run({
+    onStart: () => console.log(`${name} \n`),
+    onCycle: ({ name, totals, samples, warmup }) => {
+      console.log(
+        `${name} x ${Math.round(totals.avg)} ops/sec ± ${Math.round(
+          (totals.stdDev / totals.avg) * 10000
+        ) / 100}% (${totals.runs} runs sampled)`
+      );
+    }
+  });
+
+  let fastest = results.sort((a, b) =>
+    a.totals.avg > b.totals.avg ? -1 : a.totals.avg < b.totals.avg ? 1 : 0
+  )[0].name;
+
+  const opsec = results.map(({ name, totals: { avg } }) => [
+    `${name} ${avg}/sec`,
+    avg
+  ]);
+
+  console.log(`Fastest is: ${fastest}\n\n`);
+  await generateGraphic("Encoder Op/sec", name, opsec);
+}
+
+function jsonDecode(packet) {
+  return new Promise(resolve => {
+    resolve(JSON.parse(packet));
+  });
+}
+
+async function testDecoder(name, packet) {
+  const spPacket = await packetEncode(schemapackParser.Encoder, packet);
+  const defaultPacket = await packetEncode(defaultParser.Encoder, packet);
+  const msgpackPacket = await packetEncode(msgPackParser.Encoder, packet);
+  const jsonPacket = JSON.stringify(packet);
+
+  console.log(`------- Decoder ${name} -------\n`);
+
+  const benchmark = new Benchmark();
+
+  benchmark
+    .add("Schemapack", async () => {
+      await decodePacket(spParser.Decoder, spPacket);
+    })
+    .add("Default", async () => {
+      await decodePacket(SocketIOParser.Decoder, defaultPacket);
+    })
+    .add("Msgpack", async () => {
+      await decodePacket(Msgpack.Decoder, msgpackPacket);
+    })
+    .add("JSON", async () => {
+      await jsonDecode(jsonPacket);
+    });
+
+  let results = await benchmark.run({
+    onStart: () => console.log(`${name} \n`),
+    onCycle: ({ name, totals, samples, warmup }) => {
+      console.log(
+        `${name} x ${Math.round(totals.avg)} ops/sec ± ${Math.round(
+          (totals.stdDev / totals.avg) * 10000
+        ) / 100}% (${totals.runs} runs sampled)`
+      );
+    }
+  });
+
+  let fastest = results.sort((a, b) =>
+    a.totals.avg > b.totals.avg ? -1 : a.totals.avg < b.totals.avg ? 1 : 0
+  )[0].name;
+
+  const opsec = results.map(({ name, totals: { avg } }) => [
+    `${name} ${avg}/sec`,
+    avg
+  ]);
+
+  console.log(`Fastest is: ${fastest}\n\n`);
+  await generateGraphic("Decoder Op/sec", name, opsec);
+}
+
+(async function() {
+  const simple = buildPacket("simplePacket", simplePacket);
+  const complex = buildPacket("complexPacket", complexPacket);
+
+  await testSize("simplePacket", simple);
+  await testSize("complexPacket", complex);
+
+  await testEncoder("simplePacket", simple);
+  await testEncoder("complexPacket", complex);
+
+  await testDecoder("simplePacket", simple);
+  await testDecoder("complexPacket", complex);
+})();
