@@ -25,7 +25,7 @@
 
 - [Install](#Install)
 - [API](#API)
-- [Benchmarks](#Benchmarks)
+- [Benchmarks](./benchmarks/README.md)
 
 ## Install
 
@@ -139,30 +139,9 @@ socket.on("error", err => {
 
 &nbsp;
 
-## Benchmarks
-
-### Schemapack
-
-Smallest packet size than any other serializer and fastest in some cases.
-
-```shell
-npm run benchmarks
-```
-
-### [See the charts](./benchmarks/README.md)
-
-### Size comparsion
-
-** beatiful graph **
-
-- **Schemapack: ~162 bytes**
-- Default parser in binary(uses 2 packets): **~211 bytes**
-- Default parser: **~375 bytes**
-  d
-
 ## API
 
-#### `parser( map: Object ): { Encoder, Decoder, parsers, indexMap }`
+#### `parser.schemapack( map: Object ): { Encoder, Decoder, parsers, indexMap }`
 
 Create a schemapack parser for both Socket.io server and client.
 

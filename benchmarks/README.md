@@ -1,4 +1,4 @@
-# Schemapack Benchmarks
+# Parsers benchmarks
 
 Smallest packet size than any other serializer and fastest in some cases.
 
