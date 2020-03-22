@@ -1,5 +1,4 @@
 import { Socket } from "socket.io";
-import { kSocketAuthStatus, kSocketAuthTimeout } from "./symbols";
 ///<reference types="socket.io" />
 ///<reference types="socket.io-client" />
 
@@ -15,9 +14,9 @@ declare namespace Extensor {
   }
 
   /**
-   * Extensor Options
+   * Authorization options
    */
-  type Options = {
+  type AuthOptions = {
     /**
      * Authorization timeout, in ms
      * @default false // Don't set timeout
@@ -29,7 +28,12 @@ declare namespace Extensor {
      * @default 'Extensor defaults'
      */
     authorizedEvents?: string[];
+  };
 
+  /**
+   * Force unique connection options
+   */
+  type UniqueOptions = {
     /**
      * Identifier for prevent multiple connection attemp
      * @default false Mix of ip and user-agent

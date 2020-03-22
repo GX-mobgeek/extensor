@@ -4,7 +4,7 @@ import serverHandler from "./server";
 export function server(
   io: SocketIO.Server,
   handler: Extensor.AuthHandler,
-  options?: Extensor.Options
+  options?: Extensor.AuthOptions
 ) {
   return serverHandler(io, handler, options);
 }

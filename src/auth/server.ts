@@ -12,7 +12,7 @@ const debug = ServerDebug.extend("auth");
 export default function ServerAuthWrapper(
   io: SocketIO.Server,
   handler: Extensor.AuthHandler,
-  options: Extensor.Options = {}
+  options: Extensor.AuthOptions = {}
 ) {
   (io as any)[kExtensorAuthHandling] = true;
 

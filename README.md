@@ -38,10 +38,10 @@ npm install extensor
 ### Binary serialization with schemapack
 
 ```javascript
-import { parser } from "extensor";
+import { parsers } from "extensor";
 
 // create a schema map
-const parser = parser({
+const parser = parsers.schemapack({
   message: {
     // Convert the event name to int
     // it's a method to minimize the packet size
@@ -65,7 +65,7 @@ const src = io({
 - Here we not use **2 packets like in socket.io-parser binary event**.
 - The encode/decode schemapack functions is accessible in parser.parsers.
 
-**Schemapack are the fastest and smallest JavaScript object serialization library.**
+**Schemapack are the smallest JavaScript object serialization library.**
 
 ### All supported types and more info, you find at [schemapack](https://github.com/phretaddin/schemapack#here-is-a-table-of-the-available-data-types-for-use-in-your-schemas)
 

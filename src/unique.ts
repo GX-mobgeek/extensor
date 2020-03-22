@@ -12,7 +12,7 @@ export default function uniqueConnections(
       debug("%s: %s", local, e.message);
     },
     storage = new ExtensorLocalStorage()
-  }: Extensor.Options = {}
+  }: Extensor.UniqueOptions = {}
 ) {
   debug("start");
   const keys = new Set();
@@ -58,7 +58,7 @@ export default function uniqueConnections(
 
 function getId(
   socket: SocketIO.Socket,
-  identifier: Extensor.Options["identifier"]
+  identifier: Extensor.UniqueOptions["identifier"]
 ) {
   if (identifier && identifier in socket) {
     return (socket as any)[identifier as string];

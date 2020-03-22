@@ -9,12 +9,9 @@ const {
   generateGraphic
 } = require("./utils");
 
-// const sizeSuit = new Suite();
-
 /**
- * Parsers
+ * Encoders
  */
-
 const spParser = parsers.schemapack(packetSchema);
 
 const defaultParser = {
@@ -27,7 +24,7 @@ const msgPackParser = {
   Encoder: new Msgpack.Encoder()
 };
 /**
- * Tests
+ * Usefull
  */
 function buildPacket(name, data) {
   return {
@@ -56,6 +53,9 @@ const decodePacket = (Decoder, packet) =>
     decoder.add(packet);
   });
 
+/**
+ * Tests
+ */
 async function testSize(name, packet) {
   const spPacket = Buffer.from(
     await packetEncode(schemapackParser.Encoder, packet)
