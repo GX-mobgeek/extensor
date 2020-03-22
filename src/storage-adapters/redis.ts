@@ -2,13 +2,10 @@ import { RedisClient } from "redis";
 import { promisify } from "util";
 
 export default class RedisStorageAdapter implements Extensor.Storage {
-  client: RedisClient;
-
   getAsync: (key: string) => Promise<string | null>;
   setAsync: (key: string, value: any) => Promise<any>;
   delAsync: (key: string) => Promise<any>;
-  constructor(client: RedisClient) {
-    this.client = client;
+  constructor(public client: RedisClient) {
     this.getAsync = promisify(this.client.get).bind(this.client);
     this.setAsync = promisify(this.client.set).bind(this.client);
     this.delAsync = promisify(this.client.del).bind(this.client);

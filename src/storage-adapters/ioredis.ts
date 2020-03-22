@@ -1,10 +1,7 @@
 import { Redis } from "ioredis";
 
 export default class IORedisStorageAdapter implements Extensor.Storage {
-  client: Redis;
-  constructor(client: Redis) {
-    this.client = client;
-  }
+  constructor(public client: Redis) {}
 
   get(key: string) {
     return this.client.get(key);
