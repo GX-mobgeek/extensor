@@ -72,7 +72,7 @@ async function testSize(name, packet) {
 
   const sizes = [
     [`Schemapack ${spPacket} bytes`, spPacket],
-    [`Default ${spPacket} bytes`, dfPacket],
+    [`Default ${dfPacket} bytes`, dfPacket],
     [`Msgpack ${msgpackPacket} bytes`, msgpackPacket],
     [`JSON ${jsonPacket} bytes`, jsonPacket]
   ];
