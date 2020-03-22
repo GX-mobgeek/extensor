@@ -1,15 +1,14 @@
-import { debug as Debug } from "../../utils";
+import { ParserDebug } from "../../utils";
 import { TYPES } from "../utils";
 
-export const debug = Debug.extend("parser").extend("encoder");
+export const debug = ParserDebug.extend("schemapack").extend("encoder");
 
 const createEncoder = (
   schemas: Extensor.ParserMapSchemas,
-  parsers: Extensor.ParsersList
+  packetParser: Extensor.ParsersList
 ) => {
   return class Encoder {
     encode(packet: Extensor.ParserPacket, callback: (result: any) => void) {
-      debug("packet %j", packet);
       switch (packet.type) {
         case TYPES.EVENT:
         case TYPES.BINARY_EVENT:
@@ -28,7 +27,7 @@ const createEncoder = (
         debug("json packet %j", packet);
         return JSON.stringify(packet);
       } catch (e) {
-        debug("json error, packet: %j, error: %s", packet, e.message);
+        debug("json error: %s", e.message);
         return `{"type": ${TYPES.ERROR}, "data": "parser error"}`;
       }
     }
@@ -36,7 +35,9 @@ const createEncoder = (
     pack(packet: Extensor.ParserPacket) {
       try {
         const eventName = packet.data[0];
-        const eventSchema = parsers[eventName];
+        const eventSchema = packetParser[eventName];
+
+        debug("binary packet %j", packet);
 
         return eventSchema.encode({
           _id: schemas[eventName].id,
@@ -45,7 +46,7 @@ const createEncoder = (
           id: !("id" in packet) ? -1 : packet.id
         });
       } catch (e) {
-        debug("encode binary error: %s", e.message);
+        debug("binary error: %s", e.message);
         return `{"type": ${TYPES.ERROR}, "data": "parser error"}`;
       }
     }

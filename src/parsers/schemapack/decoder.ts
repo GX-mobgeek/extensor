@@ -1,18 +1,16 @@
-import { debug as Debug } from "../../utils";
+import { ParserDebug } from "../../utils";
 import Emitter from "component-emitter";
 import { TYPES } from "../utils";
 
-const debug = Debug.extend("parser").extend("decoder");
+const debug = ParserDebug.extend("schemapack").extend("decoder");
 
 const createDecoder = (
   idmap: Extensor.ParserIDMap,
-  parsers: Extensor.ParsersList
+  packetParser: Extensor.ParsersList
 ) =>
   class Decoder extends Emitter {
     [x: string]: any;
     add(packet: string | Buffer) {
-      debug("packet %j", packet);
-
       if (typeof packet === "string") {
         this.parseJSON(packet);
       } else {
@@ -41,21 +39,25 @@ const createDecoder = (
         const _id = view[0];
 
         const eventName: string = idmap[_id];
-        const eventSchema = parsers[eventName];
+        const eventSchema = packetParser[eventName];
 
-        const structuredPacket: any = eventSchema.decode(packet);
-        structuredPacket.type = TYPES.EVENT;
-        structuredPacket.data = [eventName, structuredPacket.data];
+        const sent: any = eventSchema.decode(packet);
 
-        if (structuredPacket.id === -1) {
-          delete structuredPacket.id;
+        const finalPacket: any = {
+          type: TYPES.EVENT,
+          data: [eventName, sent.data],
+          nsp: sent.nsp
+        };
+
+        if (sent.id !== -1) {
+          finalPacket.id = sent.id;
         }
 
-        debug("decoded binary: %j", structuredPacket);
+        debug("binary packet: %j", finalPacket);
 
-        this.emit("decoded", structuredPacket);
+        this.emit("decoded", finalPacket);
       } catch (e) {
-        debug("decode binary error: %s", e.message);
+        debug("binary error: %s", e.message);
 
         this.emit("decoded", {
           type: TYPES.ERROR,

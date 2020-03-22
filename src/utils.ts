@@ -2,6 +2,7 @@ import Debug from "debug";
 
 export const debug = Debug("extensor");
 
+export const ParserDebug = debug.extend("parser");
 export const ServerDebug = debug.extend("server");
 export const ClientDebug = debug.extend("client");
 

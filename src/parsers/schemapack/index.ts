@@ -5,11 +5,11 @@ import decoder from "./decoder";
 export default function buildSchemapackParser(
   dataStruct: Extensor.ParserMapSchemas
 ) {
-  const { idmap, parsers } = schemaBuilder({ ...dataStruct });
+  const { idmap, packetParser, parsers } = schemaBuilder({ ...dataStruct });
 
   return {
-    Encoder: encoder(dataStruct, parsers),
-    Decoder: decoder(idmap, parsers),
+    Encoder: encoder(dataStruct, packetParser),
+    Decoder: decoder(idmap, packetParser),
     idmap,
     parsers
   };
