@@ -1,18 +1,19 @@
-const { parsers } = require("../dist/");
+const { parsers } = require("../dist");
 const SocketIOParser = require("socket.io-parser");
 const Msgpack = require("socket.io-msgpack-parser");
 const Benchmark = require("benchmark-util");
+
 const {
   packetSchema,
   simplePacket,
   complexPacket,
   generateGraphic
-} = require("./utils");
+} = require("./utils.js");
 
 /**
  * Encoders
  */
-const spParser = parsers.schemapack(packetSchema);
+const { parser: spParser } = parsers.schemapack(packetSchema);
 
 const defaultParser = {
   Encoder: new SocketIOParser.Encoder()

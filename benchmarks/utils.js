@@ -1,36 +1,3 @@
-const { Server } = require("http");
-const SocketIO = require("socket.io");
-const SocketIOClient = require("socket.io-client");
-
-module.exports.makeServer = function makeServer(opts) {
-  const http = new Server();
-  const io = SocketIO(http, {
-    ...opts,
-    transports: ["websocket", "polling"]
-  });
-
-  io.on("connection", socket => {
-    socket.on(complexPacketName, (data, ack) => {
-      ack && ack();
-    });
-  });
-  return {
-    http,
-    io
-  };
-};
-
-module.exports.makeClient = function makeClient(srv, opts) {
-  let addr = srv.address();
-  if (!addr) addr = srv.listen().address();
-
-  const url = "ws://localhost:" + addr.port;
-  return SocketIOClient(url, {
-    ...opts,
-    transports: ["websocket", "polling"]
-  });
-};
-
 module.exports.packetSchema = {
   simplePacket: {
     id: 1,

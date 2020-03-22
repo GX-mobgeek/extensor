@@ -40,7 +40,7 @@ npm install extensor
 import { parsers } from "extensor";
 
 // create a schema map
-const parser = parsers.schemapack({
+const { parser, schemas } = parsers.schemapack({
   message: {
     // Convert the event name to int
     // it's a method to minimize the packet size
@@ -53,16 +53,22 @@ const parser = parsers.schemapack({
 });
 
 // On both, server and client
-// initialize socketio with extensor parser
-const src = io({
+// initialize socketio with the extensor generated parser
+const io = SocketIO({
   parser
 });
+
+// You can encode an object, if you need, like this:
+const binary = schemas.message.encode({
+  content: "hi",
+  ts: Math.round(Date.now() / 1000)
+});
+console.log(schemas.message.decode(binary)); // => { content: "hi": ts: 159798894154 }
 ```
 
 - All emitted "message" events are binary, according with the schema;
-- For the events that not in list, JSON parser is used.
 - Here we not use **2 packets like in socket.io-parser binary event**.
-- The encode/decode schemapack functions is accessible in parser.parsers.
+- For the events that not in list, JSON parser is used.
 
 **Schemapack are the smallest JavaScript object serialization library.**
 
@@ -140,7 +146,7 @@ socket.on("error", err => {
 
 ## API
 
-#### `parser.schemapack( map: Object ): { Encoder, Decoder, parsers, indexMap }`
+#### `parsers.schemapack( map: Object ): { parser: { Encoder, Decoder }, schemas, idmap }`
 
 Create a schemapack parser for both Socket.io server and client.
 
@@ -152,7 +158,7 @@ Create a server middleware to handle authentication
 
 Send credential to server
 
-#### `unique( [ options: ExtensorOptions ] )`
+#### `unique( io: SocketIO.Server [, options: ExtensorOptions ] )`
 
 Create a step on the server to force a single connection
 
