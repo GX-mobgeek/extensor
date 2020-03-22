@@ -1,5 +1,6 @@
 import { kSocketAuthStatus } from "./symbols";
 import { EVENTS } from "./constants";
+import { ServerSocket } from "types";
 
 export const defaultAuthorized = [
   EVENTS.AUTHORIZE,
@@ -17,7 +18,7 @@ export default function watchPackets(
 
   socket.use((packet, next) => {
     if (
-      (socket as Extensor.ServerSocket)[kSocketAuthStatus] ||
+      (socket as ServerSocket)[kSocketAuthStatus] ||
       authorizedEvents.indexOf(packet[0]) !== -1
     )
       return next();

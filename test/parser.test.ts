@@ -1,9 +1,9 @@
-///<reference types="../index" />
 import { Server } from "http";
 import { makeClient, makeServers, map } from "./mocks";
 import * as parsers from "../src/parsers";
+import { ParserPacket } from "../src/types";
 
-function testParser(name: string, parser: any) {
+function testParser(name: string, buildParser: any) {
   describe(`${name} parser`, function() {
     const packet = {
       content: "perfOnTop",
@@ -17,7 +17,7 @@ function testParser(name: string, parser: any) {
 
     beforeEach(() => {
       const opts = {
-        parser: parser(map)
+        parser: buildParser(map).parser
       };
       const servers = makeServers(opts);
       ioServer = servers.ioServer;
@@ -88,7 +88,7 @@ function testParser(name: string, parser: any) {
       };
 
       function createParser() {
-        const { Encoder, Decoder, parsers } = parser({
+        const { parser } = buildParser({
           chatMsg: {
             id: 2,
             schema: {
@@ -102,10 +102,10 @@ function testParser(name: string, parser: any) {
           }
         });
 
-        const encoder = new Encoder();
-        const decoder = new Decoder();
+        const encoder = new parser.Encoder();
+        const decoder = new parser.Decoder();
 
-        return { encoder, decoder, parsers };
+        return { encoder, decoder };
       }
       describe("encoder", () => {
         it("throws invalid json", done => {
@@ -132,7 +132,7 @@ function testParser(name: string, parser: any) {
       describe("decoder", () => {
         it("throws invalid json", done => {
           const { decoder } = createParser();
-          decoder.on("decoded", (packet: Extensor.ParserPacket) => {
+          decoder.on("decoded", (packet: ParserPacket) => {
             expect(packet.type).toBe(4);
             expect(packet.data).toBe(
               "parser error: Unexpected token ; in JSON at position 0"
@@ -145,7 +145,7 @@ function testParser(name: string, parser: any) {
         it("throws invalid binary", done => {
           const { decoder } = createParser();
 
-          decoder.on("decoded", (packet: Extensor.ParserPacket) => {
+          decoder.on("decoded", (packet: ParserPacket) => {
             expect(packet.type).toBe(4);
             expect(packet.data).toBe(
               "parser error: Cannot read property 'decode' of undefined"
@@ -161,7 +161,7 @@ function testParser(name: string, parser: any) {
     it("throw if undefined event id", () => {
       expect(() => {
         makeServers({
-          parser: parser({
+          parser: buildParser({
             chatMsg: {
               schema: "string"
             }
@@ -173,7 +173,7 @@ function testParser(name: string, parser: any) {
     it("throw if undefined event schema", () => {
       expect(() => {
         makeServers({
-          parser: parser({
+          parser: buildParser({
             chatMsg: {
               id: 1
             }

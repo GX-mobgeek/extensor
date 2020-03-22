@@ -1,4 +1,6 @@
-export default class LocalStorage implements Extensor.Storage {
+import { Storage } from "../types";
+
+export default class LocalStorage implements Storage {
   itens: { [key: string]: any } = {};
 
   async get(key: string) {

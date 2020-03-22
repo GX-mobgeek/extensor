@@ -6,11 +6,10 @@
   "module": "dist/extensor.esm.js",
   "typings": "dist/index.d.ts",
   "files": [
-    "index.d.ts",
     "dist/"
   ],
   "scripts": {
-    "benchmarks": "node ./benchmarks/index.js",
+    "benchmarks": "node ./benchmarks",
     "build": "tsdx build",
     "test": "tsdx test --testTimeout 2000 --forceExit",
     "test:watch": "tsdx test --watch",

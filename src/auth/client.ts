@@ -1,5 +1,6 @@
 import { ClientDebug } from "../utils";
 import { EVENTS } from "../constants";
+import { AuthResultResponse, ClientSocket } from "../types";
 
 const debug = ClientDebug.extend("auth");
 
@@ -23,7 +24,7 @@ function authorize(
   onSuccess: () => void,
   onError: (error?: Error) => void
 ) {
-  socket.emit(EVENTS.AUTHORIZE, data, (result: Extensor.AuthResultResponse) => {
+  socket.emit(EVENTS.AUTHORIZE, data, (result: AuthResultResponse) => {
     debug("[socket %s]: server response %s", socket.id, result);
 
     if (result.error) {
@@ -31,13 +32,13 @@ function authorize(
       onError(new Error(result.error));
     }
 
-    merge(socket as Extensor.ClientSocket, result.merge);
+    merge(socket as ClientSocket, result.merge);
 
     onSuccess();
   });
 }
 
-function merge(socket: Extensor.ClientSocket, props: { [prop: string]: any }) {
+function merge(socket: ClientSocket, props: { [prop: string]: any }) {
   debug("[socket %s]: merge socket props: %o", socket.id, props);
   for (const prop in props) {
     socket[prop] = props[prop];

@@ -1,14 +1,16 @@
 import { ParserDebug } from "../../utils";
 import { TYPES } from "../utils";
 
+import { ParserMapSchemas, ParsersList, ParserPacket } from "../../types";
+
 export const debug = ParserDebug.extend("schemapack").extend("encoder");
 
 const createEncoder = (
-  schemas: Extensor.ParserMapSchemas,
-  packetParser: Extensor.ParsersList
+  schemas: ParserMapSchemas,
+  packetParser: ParsersList
 ) => {
   return class Encoder {
-    encode(packet: Extensor.ParserPacket, callback: (result: any) => void) {
+    encode(packet: ParserPacket, callback: (result: any) => void) {
       switch (packet.type) {
         case TYPES.EVENT:
         case TYPES.BINARY_EVENT:
@@ -22,7 +24,7 @@ const createEncoder = (
       }
     }
 
-    json(packet: Extensor.ParserPacket) {
+    json(packet: ParserPacket) {
       try {
         debug("json packet %j", packet);
         return JSON.stringify(packet);
@@ -32,7 +34,7 @@ const createEncoder = (
       }
     }
 
-    pack(packet: Extensor.ParserPacket) {
+    pack(packet: ParserPacket) {
       try {
         const eventName = packet.data[0];
         const eventSchema = packetParser[eventName];

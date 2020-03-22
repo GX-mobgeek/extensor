@@ -1,4 +1,3 @@
-///<reference types="../index" />
 import { auth, unique } from "../src";
 import { makeClient, makeServers } from "./mocks";
 

@@ -1,7 +1,7 @@
-///<reference types="../index" />
 import { Server } from "http";
 import { makeClient, makeServers } from "./mocks";
 import * as auth from "../src/auth";
+import { ServerSocket } from "../src/types";
 
 describe("authentication", () => {
   let io: SocketIO.Server;
@@ -58,7 +58,7 @@ describe("authentication", () => {
       return data.token === 1;
     });
 
-    io.on("connection", async (socket: Extensor.ServerSocket) => {
+    io.on("connection", async (socket: ServerSocket) => {
       await socket.auth;
 
       done();
@@ -79,7 +79,7 @@ describe("authentication", () => {
     });
 
     io.on("connection", socket => {
-      (socket as Extensor.ServerSocket).auth.catch((_err: Error) => {});
+      (socket as ServerSocket).auth.catch((_err: Error) => {});
     });
 
     client.open();
@@ -136,7 +136,7 @@ describe("authentication", () => {
 
     auth.server(io, () => true, { authorizedEvents: ["foo"] });
 
-    io.on("connection", async (socket: Extensor.ServerSocket) => {
+    io.on("connection", async (socket: ServerSocket) => {
       socket.on("bar", () => {
         ++i;
       });

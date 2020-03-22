@@ -1,10 +1,12 @@
 import clientHandler from "./client";
 import serverHandler from "./server";
 
+import { AuthHandler, AuthOptions } from "../types";
+
 export function server(
   io: SocketIO.Server,
-  handler: Extensor.AuthHandler,
-  options?: Extensor.AuthOptions
+  handler: AuthHandler,
+  options?: AuthOptions
 ) {
   return serverHandler(io, handler, options);
 }

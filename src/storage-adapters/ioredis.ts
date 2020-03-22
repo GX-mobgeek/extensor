@@ -1,6 +1,7 @@
 import { Redis } from "ioredis";
+import { Storage } from "../types";
 
-export default class IORedisStorageAdapter implements Extensor.Storage {
+export default class IORedisStorageAdapter implements Storage {
   constructor(public client: Redis) {}
 
   get(key: string) {

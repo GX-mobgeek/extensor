@@ -1,7 +1,8 @@
 import { RedisClient } from "redis";
 import { promisify } from "util";
+import { Storage } from "../types";
 
-export default class RedisStorageAdapter implements Extensor.Storage {
+export default class RedisStorageAdapter implements Storage {
   getAsync: (key: string) => Promise<string | null>;
   setAsync: (key: string, value: any) => Promise<any>;
   delAsync: (key: string) => Promise<any>;

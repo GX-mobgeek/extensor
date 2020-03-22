@@ -1,9 +1,9 @@
-///<reference types="../index" />
 import { Redis, IORedis, Local } from "../src/storage-adapters";
 import redis from "redis";
 import ioRedis from "ioredis";
+import { Storage } from "../src/types";
 
-function testWith(title: string, store: Extensor.Storage) {
+function testWith(title: string, store: Storage) {
   describe(`storage adapter: ${title}`, () => {
     it("set/get/delete", async () => {
       await store.set("foo", "bar");

@@ -1,10 +1,12 @@
 // @ts-ignore
 import * as schemapack from "schemapack";
 
-export default function buildSchemas(map: Extensor.ParserMapSchemas) {
-  const packetParser: Extensor.ParsersList = {};
-  const parsers: Extensor.ParsersList = {};
-  const idmap: Extensor.ParserIDMap = {};
+import { ParserMapSchemas, ParserIDMap, ParsersList } from "../../types";
+
+export default function buildSchemas(map: ParserMapSchemas) {
+  const packetParser: ParsersList = {};
+  const schemas: ParsersList = {};
+  const idmap: ParserIDMap = {};
 
   Object.keys(map).forEach(event => {
     const item = map[event];
@@ -21,10 +23,10 @@ export default function buildSchemas(map: Extensor.ParserMapSchemas) {
       nsp: "string"
     });
 
-    parsers[event] = schemapack.build(item.schema);
+    schemas[event] = schemapack.build(item.schema);
 
     idmap[item.id] = event;
   });
 
-  return { parsers, packetParser, idmap };
+  return { schemas, packetParser, idmap };
 }
