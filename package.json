@@ -59,7 +59,7 @@
     "socket.io": "^2.3.0",
     "socket.io-client": "^2.3.0",
     "socket.io-msgpack-parser": "^2.2.0",
-    "standard-version": "^7.1.0",
+    "standard-version": "^8.0.1",
     "tsdx": "^0.13.0",
     "typescript": "^3.8.3"
   },
