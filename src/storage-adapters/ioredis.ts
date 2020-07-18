@@ -17,6 +17,6 @@ export default class IORedisStorageAdapter implements Storage {
   }
 
   deleteAll(keys: string[]) {
-    return this.client.del.apply(this.client, keys);
+    return this.client.del(...keys);
   }
 }
