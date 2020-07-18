@@ -4,7 +4,7 @@ import { Socket } from "socket.io";
 
 export interface Storage {
   get(key: string): Promise<string | null>;
-  set(key: string, value: any): Promise<string>;
+  set(key: string, value: any): Promise<any>;
   del(key: string): Promise<number>;
   deleteAll(keys: string[]): Promise<number | void | null>;
 }
