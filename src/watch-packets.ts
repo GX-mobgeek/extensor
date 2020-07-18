@@ -1,6 +1,6 @@
 import { kSocketAuthStatus } from "./symbols";
 import { EVENTS } from "./constants";
-import { ServerSocket } from "types";
+import { ServerSocket } from "./types";
 
 export const defaultAuthorized = [
   EVENTS.AUTHORIZE,
