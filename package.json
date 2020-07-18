@@ -9,7 +9,7 @@
     "dist/"
   ],
   "scripts": {
-    "benchmarks": "node ./benchmarks",
+    "benchmarks": "ts-node ./benchmarks",
     "build": "tsdx build",
     "test": "tsdx test --testTimeout 2000 --forceExit",
     "test:watch": "tsdx test --watch",
@@ -54,12 +54,13 @@
     "husky": "^3.1.0",
     "ioredis": "^4.16.0",
     "lint-staged": "^9.5.0",
-    "puppeteer": "^2.1.1",
+    "live-plugin-manager": "^0.14.1",
     "redis": "^3.0.2",
     "socket.io": "^2.3.0",
     "socket.io-client": "^2.3.0",
     "socket.io-msgpack-parser": "^2.2.0",
     "standard-version": "^8.0.1",
+    "ts-node": "^8.10.2",
     "tsdx": "^0.13.0",
     "typescript": "^3.8.3"
   },
