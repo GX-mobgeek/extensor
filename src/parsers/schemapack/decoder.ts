@@ -1,7 +1,7 @@
 import { ParserDebug } from "../../utils";
-import Emitter from "component-emitter";
 import { TYPES } from "../utils";
 import { ParserIDMap, ParsersList } from "../../types";
+const Emitter = require("component-emitter");
 
 const debug = ParserDebug.extend("schemapack").extend("decoder");
 
@@ -25,7 +25,7 @@ const createDecoder = (idmap: ParserIDMap, packetParser: ParsersList) =>
         debug("json error, packet: %s, error: %s", packet, e.message);
         this.emit("decoded", {
           type: TYPES.ERROR,
-          data: `parser error: ${e.message}`
+          data: `parser error: ${e.message}`,
         });
       }
     }
@@ -44,7 +44,7 @@ const createDecoder = (idmap: ParserIDMap, packetParser: ParsersList) =>
         const finalPacket: any = {
           type: TYPES.EVENT,
           data: [eventName, sent.data],
-          nsp: sent.nsp
+          nsp: sent.nsp,
         };
 
         if (sent.id !== -1) {
@@ -59,7 +59,7 @@ const createDecoder = (idmap: ParserIDMap, packetParser: ParsersList) =>
 
         this.emit("decoded", {
           type: TYPES.ERROR,
-          data: `parser error: ${e.message}`
+          data: `parser error: ${e.message}`,
         });
       }
     }
