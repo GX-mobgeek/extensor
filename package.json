@@ -1,6 +1,6 @@
 {
   "name": "extensor",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Extra funcionalities to socket.io",
   "main": "dist/index.js",
   "module": "dist/extensor.esm.js",
