@@ -1,3 +1,4 @@
+//@ts-nocheck
 import { Server } from "http";
 import io from "socket.io";
 import ioClient from "socket.io-client";
@@ -13,7 +14,7 @@ export function makeServers(opts?: any) {
   const httpServer = new Server();
   const ioServer = io(httpServer, {
     ...opts,
-    transports: ["websocket", "polling"]
+    transports: ["websocket", "polling"],
   });
 
   return {
@@ -22,7 +23,7 @@ export function makeServers(opts?: any) {
     stop() {
       ioServer.close();
       httpServer.close();
-    }
+    },
   };
 }
 
@@ -38,13 +39,13 @@ export function makeThrowAdapter(config: throwAdapterConfig = {}) {
     get: { count: Infinity, msg: "get error" },
     set: { count: Infinity, msg: "set error" },
     del: { count: Infinity, msg: "del error" },
-    ...config
+    ...config,
   };
 
   const calls = {
     get: 0,
     set: 0,
-    del: 0
+    del: 0,
   };
 
   return {
@@ -54,10 +55,10 @@ export function makeThrowAdapter(config: throwAdapterConfig = {}) {
 
       return "";
     },
-    set: async (key: string): Promise<string> => {
+    set: async (key: string): Promise<any> => {
       calls.set++;
       if (calls.set === config.set.count) throw new Error(config.set.msg);
-      return key;
+      return "OK";
     },
     del: async (): Promise<number> => {
       calls.del++;
@@ -66,7 +67,7 @@ export function makeThrowAdapter(config: throwAdapterConfig = {}) {
     },
     async deleteAll(keys: string[]) {
       keys.map(this.del);
-    }
+    },
   };
 }
 
@@ -75,7 +76,7 @@ export const map = {
     id: 255,
     schema: {
       content: "string",
-      ts: "varuint"
-    }
-  }
+      ts: "varuint",
+    },
+  },
 };

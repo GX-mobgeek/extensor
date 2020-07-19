@@ -1,6 +1,7 @@
+//@ts-nocheck
 import { Redis, IORedis, Local } from "../src/storage-adapters";
-import redis from "redis";
-import ioRedis from "ioredis";
+import redis from "redis-mock";
+import ioRedis from "ioredis-mock";
 import { Storage } from "../src/types";
 
 function testWith(title: string, store: Storage) {
