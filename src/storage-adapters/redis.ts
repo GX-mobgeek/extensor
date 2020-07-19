@@ -24,7 +24,7 @@ export default class RedisStorageAdapter implements Storage {
     return this.delAsync(key);
   }
 
-  deleteAll(keys: [string]) {
-    return this.delAsync(...keys);
+  deleteAll(keys: string | string[]) {
+    return this.delAsync(keys as string); // avoid redis type error
   }
 }
