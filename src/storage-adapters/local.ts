@@ -5,7 +5,7 @@ export default class LocalStorage implements Storage {
   itens: { [key: string]: any } = {};
 
   async get(key: string) {
-    return this.store.get(key);
+    return this.store.get(key) || null;
   }
 
   async set(key: string, value: any) {
