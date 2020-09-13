@@ -1,7 +1,8 @@
 import { Server } from "http";
 import { makeClient, makeServers } from "./mocks";
+import { Socket } from "socket.io";
 import * as auth from "../src/auth";
-import { ServerSocket } from "../src/types";
+import { EVENTS } from "../src/constants";
 
 describe("authentication", () => {
   let io: SocketIO.Server;
@@ -58,7 +59,7 @@ describe("authentication", () => {
       return data.token === 1;
     });
 
-    io.on("connection", async (socket: ServerSocket) => {
+    io.on("connection", async (socket: Socket) => {
       await socket.auth;
 
       done();
@@ -79,7 +80,7 @@ describe("authentication", () => {
     });
 
     io.on("connection", socket => {
-      (socket as ServerSocket).auth.catch((_err: Error) => {});
+      socket.auth.catch((_err: Error) => {});
     });
 
     client.open();
@@ -93,6 +94,33 @@ describe("authentication", () => {
       client.on("disconnect", () => {
         done();
       });
+    });
+  });
+
+  it("deny with promises", done => {
+    const message = "error message";
+
+    auth.server(io, () => {
+      throw new Error(message);
+    });
+
+    io.on("connection", socket => {
+      socket.auth.catch((_err: Error) => {});
+    });
+
+    const disconnectedCall = jest.fn();
+
+    client.open();
+    client.on("connect", async () => {
+      await expect(auth.client(client, { token: 1 })).rejects.toStrictEqual(
+        new Error(message)
+      );
+      expect(disconnectedCall).toBeCalled();
+      done();
+    });
+
+    client.on("disconnect", () => {
+      disconnectedCall();
     });
   });
 
@@ -122,21 +150,30 @@ describe("authentication", () => {
   });
 
   it("clear timeout after authentication", done => {
-    auth.server(io, () => true, { timeout: 20000 });
+    auth.server(io, () => true, { timeout: 500 });
+
+    const notBeCalled = jest.fn();
 
     client.open();
     client.on("connect", async () => {
       await auth.client(client, true);
+
+      client.on(EVENTS.AUTH_TIMEOUT, notBeCalled);
+
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      expect(notBeCalled).toBeCalledTimes(0);
+
       done();
     });
-  });
+  }, 5000);
 
   it("extend authorized events", done => {
     let i = 0;
 
     auth.server(io, () => true, { authorizedEvents: ["foo"] });
 
-    io.on("connection", async (socket: ServerSocket) => {
+    io.on("connection", async (socket: Socket) => {
       socket.on("bar", () => {
         ++i;
       });
