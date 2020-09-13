@@ -3,7 +3,7 @@ import { Server } from "http";
 import { makeClient, makeServers, makeThrowAdapter } from "./mocks";
 import unique, { debug as uniqueDebug } from "../src/unique";
 import { slugify } from "../src/utils";
-import LocalStorage from "../src/storage-adapters/local";
+import { storageAdapters } from "../dist";
 
 describe("unique connection", () => {
   let ioServer: SocketIO.Server;
@@ -54,7 +54,7 @@ describe("unique connection", () => {
       window.navigator.userAgent
     )}`;
 
-    const storage = new LocalStorage();
+    const storage = new storageAdapters.Local();
     unique(ioServer, { storage });
 
     const client = createClient();

@@ -1,5 +1,5 @@
 //@ts-nocheck
-import { Redis, IORedis, Local } from "../src/storage-adapters";
+import { storageAdapters } from "../dist";
 import redis from "redis-mock";
 import ioRedis from "ioredis-mock";
 import { Storage } from "../src/types";
@@ -41,6 +41,6 @@ function testWith(title: string, store: Storage) {
     });
   });
 }
-testWith("local", new Local());
-testWith("redis", new Redis(redis.createClient()));
-testWith("ioredis", new IORedis(new ioRedis()));
+testWith("local", new storageAdapters.Local());
+testWith("redis", new storageAdapters.Redis(redis.createClient()));
+testWith("ioredis", new storageAdapters.IORedis(new ioRedis()));

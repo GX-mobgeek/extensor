@@ -1,25 +1,24 @@
 import { Storage } from "../types";
 
 export default class LocalStorage implements Storage {
+  store = new Map();
   itens: { [key: string]: any } = {};
 
   async get(key: string) {
-    if (!(key in this.itens)) return null;
-
-    return this.itens[key];
+    return this.store.get(key);
   }
 
   async set(key: string, value: any) {
-    return (this.itens[key] = value);
+    return this.store.set(key, value);
   }
 
   async del(key: string) {
-    delete this.itens[key];
+    this.store.delete(key);
     return 1;
   }
 
   async deleteAll(keys: string[]) {
-    keys.map(key => this.del(key));
+    keys.map(key => this.store.delete(key));
     return keys.length;
   }
 }

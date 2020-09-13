@@ -1,4 +1,4 @@
-import { auth, unique } from "../src";
+import { auth, unique } from "../dist";
 import { makeClient, makeServers } from "./mocks";
 
 describe("common", () => {

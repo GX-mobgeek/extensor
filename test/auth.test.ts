@@ -1,8 +1,7 @@
 import { Server } from "http";
 import { makeClient, makeServers } from "./mocks";
 import { Socket } from "socket.io";
-import * as auth from "../src/auth";
-import { EVENTS } from "../src/constants";
+import { auth, EVENTS } from "../dist";
 
 describe("authentication", () => {
   let io: SocketIO.Server;

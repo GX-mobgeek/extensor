@@ -1,5 +1,5 @@
 import { Socket } from "socket.io";
-import { kSocketAuthStatus, kSocketAuthTimeout } from "symbols";
+import { kSocketAuthStatus, kSocketAuthTimeout } from "./symbols";
 
 export interface Storage {
   get(key: string): Promise<string | null>;
