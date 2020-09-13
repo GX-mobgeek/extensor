@@ -1,8 +1,7 @@
 //@ts-nocheck
-import { storageAdapters } from "../dist";
+import { storageAdapters, Storage } from "../src";
 import redis from "redis-mock";
 import ioRedis from "ioredis-mock";
-import { Storage } from "../src/types";
 
 function testWith(title: string, store: Storage) {
   describe(`storage adapter: ${title}`, () => {

@@ -1,7 +1,6 @@
 import { Server } from "http";
 import { makeClient, makeServers, map } from "./mocks";
-import { parsers } from "../dist";
-import { ParserPacket } from "../dist/types";
+import { parsers, ParserPacket } from "../src";
 
 function testParser(name: string, buildParser: any) {
   describe(`${name} parser`, function() {

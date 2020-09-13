@@ -3,7 +3,7 @@ import { Server } from "http";
 import { makeClient, makeServers, makeThrowAdapter } from "./mocks";
 import unique, { debug as uniqueDebug } from "../src/unique";
 import { slugify } from "../src/utils";
-import { storageAdapters } from "../dist";
+import { storageAdapters } from "../src";
 
 describe("unique connection", () => {
   let ioServer: SocketIO.Server;
