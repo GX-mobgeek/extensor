@@ -1,11 +1,12 @@
 import { ClientDebug } from "../utils";
 import { EVENTS } from "../constants";
-import { AuthResultResponse, ClientSocket } from "../types";
+import { AuthResultResponse } from "../types";
+import { Socket } from "socket.io-client";
 
 const debug = ClientDebug.extend("auth");
 
 export default function ClientAuthWrapper(
-  socket: SocketIOClient.Socket,
+  socket: typeof Socket,
   data: any,
   callback?: (error?: Error) => void
 ) {
@@ -19,7 +20,7 @@ export default function ClientAuthWrapper(
 }
 
 function authorize(
-  socket: SocketIOClient.Socket,
+  socket: typeof Socket,
   data: any,
   onSuccess: () => void,
   onError: (error?: Error) => void
@@ -32,13 +33,13 @@ function authorize(
       onError(new Error(result.error));
     }
 
-    merge(socket as ClientSocket, result.merge);
+    merge(socket, result.merge);
 
     onSuccess();
   });
 }
 
-function merge(socket: ClientSocket, props: { [prop: string]: any }) {
+function merge(socket: any, props: { [prop: string]: any }) {
   debug("[socket %s]: merge socket props: %o", socket.id, props);
   for (const prop in props) {
     socket[prop] = props[prop];

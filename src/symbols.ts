@@ -1,5 +1,5 @@
-const kExtensorAuthHandling: string = Symbol("extensorIoAuthHandling") as any;
-const kSocketAuthStatus: string = Symbol("extensorSocketAuthStatus") as any;
-const kSocketAuthTimeout: string = Symbol("extensorSocketAuthTimeout") as any;
+const kExtensorAuthHandling = Symbol("extensorIoAuthHandling");
+const kSocketAuthStatus = Symbol("extensorSocketAuthStatus");
+const kSocketAuthTimeout = Symbol("extensorSocketAuthTimeout");
 
 export { kExtensorAuthHandling, kSocketAuthStatus, kSocketAuthTimeout };

@@ -1,55 +1,51 @@
 import watchPackets from "../watch-packets";
 import { EVENTS } from "../constants";
+import { Server, Namespace, Socket } from "socket.io";
 import {
   kExtensorAuthHandling,
   kSocketAuthStatus,
   kSocketAuthTimeout
 } from "../symbols";
 import { ServerDebug, defer } from "../utils";
-import {
-  AuthHandler,
-  AuthOptions,
-  ServerSocket,
-  AuthDoneResponse
-} from "../types";
+import { AuthHandler, AuthOptions, AuthDoneResponse } from "../types";
 
 const debug = ServerDebug.extend("auth");
 
 export default function ServerAuthWrapper(
-  io: SocketIO.Server,
+  io: Server | Namespace,
   handler: AuthHandler,
   options: AuthOptions = {}
 ) {
   (io as any)[kExtensorAuthHandling] = true;
 
-  io.use(async (socket: SocketIO.Socket, next: (error?: any) => void) => {
+  io.use(async (socket: Socket, next: (error?: any) => void) => {
     watchPackets(socket, options.authorizedEvents);
 
-    (socket as ServerSocket)[kSocketAuthStatus] = false;
+    socket[kSocketAuthStatus] = false;
     debug("[socket %s]: watching packets", socket.id);
 
     next();
 
     if ("timeout" in options && options.timeout !== false) {
-      (socket as ServerSocket)[kSocketAuthTimeout] = setTimeout(
-        (socket: SocketIO.Socket) => {
+      socket[kSocketAuthTimeout] = (setTimeout(
+        (socket: Socket) => {
           socket.emit("authTimeout");
           debug("[socket %s]: auth timeout", socket.id);
           socket.disconnect(true);
         },
         options.timeout as number,
         socket
-      );
+      ) as unknown) as NodeJS.Timeout;
     }
 
     const { resolve, reject, promise } = defer();
 
-    (socket as ServerSocket).auth = promise;
+    (socket as any).auth = promise;
 
     socket.on(EVENTS.AUTHORIZE, async (data, ack) => {
       if ("timeout" in options && options.timeout !== false) {
         debug("[socket %s]: clear timeout", socket.id, options.timeout);
-        clearTimeout((socket as ServerSocket)[kSocketAuthTimeout]);
+        clearTimeout(socket[kSocketAuthTimeout] as NodeJS.Timeout);
       }
 
       function done(result: AuthDoneResponse) {
@@ -70,7 +66,7 @@ export default function ServerAuthWrapper(
 
         debug("[socket %s]: auth successful", socket.id);
 
-        (socket as ServerSocket)[kSocketAuthStatus] = true;
+        socket[kSocketAuthStatus] = true;
 
         if (result instanceof Object) {
           debug(

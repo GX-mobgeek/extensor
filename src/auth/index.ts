@@ -1,10 +1,12 @@
 import clientHandler from "./client";
 import serverHandler from "./server";
+import { Server } from "socket.io";
+import { Socket } from "socket.io-client";
 
 import { AuthHandler, AuthOptions } from "../types";
 
 export function server(
-  io: SocketIO.Server,
+  io: Server,
   handler: AuthHandler,
   options?: AuthOptions
 ) {
@@ -12,7 +14,7 @@ export function server(
 }
 
 export function client(
-  socket: SocketIOClient.Socket,
+  socket: typeof Socket,
   data: any,
   callback?: (error?: Error) => void
 ): Promise<unknown> | void {
