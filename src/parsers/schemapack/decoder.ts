@@ -1,12 +1,12 @@
 import { ParserDebug } from "../../utils";
 import { TYPES } from "../utils";
 import { ParserIDMap, ParsersList } from "../../types";
-const Emitter = require("component-emitter");
+import EventEmitter from "eventemitter3";
 
 const debug = ParserDebug.extend("schemapack").extend("decoder");
 
 const createDecoder = (idmap: ParserIDMap, packetParser: ParsersList) =>
-  class Decoder extends Emitter {
+  class Decoder extends EventEmitter {
     [x: string]: any;
     add(packet: string | Buffer) {
       if (typeof packet === "string") {
