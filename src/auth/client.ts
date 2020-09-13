@@ -31,6 +31,7 @@ function authorize(
     if (result.error) {
       debug("[socket %s]: auth failed, error: %s", socket.id, result.error);
       onError(new Error(result.error));
+      return;
     }
 
     merge(socket, result.merge);
