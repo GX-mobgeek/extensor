@@ -1,11 +1,10 @@
 import { kSocketAuthStatus } from "./symbols";
 import { EVENTS } from "./constants";
-import { ServerSocket } from "./types";
 
 export const defaultAuthorized = [
   EVENTS.AUTHORIZE,
   EVENTS.AUTH_RESULT,
-  EVENTS.MULTIPLE_ATTEMP
+  EVENTS.AUTH_TIMEOUT
 ];
 
 export default function watchPackets(
@@ -17,10 +16,7 @@ export default function watchPackets(
     : defaultAuthorized;
 
   socket.use((packet, next) => {
-    if (
-      (socket as ServerSocket)[kSocketAuthStatus] ||
-      authorizedEvents.indexOf(packet[0]) !== -1
-    )
+    if (socket[kSocketAuthStatus] || authorizedEvents.indexOf(packet[0]) !== -1)
       return next();
   });
 }

@@ -53,14 +53,6 @@ export type AuthResultResponse = {
   merge: { [prop: string]: any };
 };
 
-export type ServerSocket = Socket & {
-  [prop: string]: any;
-  /**
-   * Handler socket authentication
-   */
-  auth: Promise<unknown>;
-};
-
 export type AuthHandler = (ctx: {
   /**
    * Socket that requests authentication

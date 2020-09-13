@@ -29,7 +29,7 @@ export default function ServerAuthWrapper(
     if ("timeout" in options && options.timeout !== false) {
       socket[kSocketAuthTimeout] = (setTimeout(
         (socket: Socket) => {
-          socket.emit("authTimeout");
+          socket.emit(EVENTS.AUTH_TIMEOUT);
           debug("[socket %s]: auth timeout", socket.id);
           socket.disconnect(true);
         },
